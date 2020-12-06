@@ -74,7 +74,7 @@ public class RetryConfigBuilder {
     /**
      * How many times to run the assertion for, in case it fails.
      *
-     * @throws IllegalArgumentException if maxAttempts is < 1
+     * @throws IllegalArgumentException if maxAttempts is &lt; 1
      */
     public RetryConfigBuilder maxAttempts(int maxAttempts) {
         if (maxAttempts < 1) {

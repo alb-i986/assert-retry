@@ -85,7 +85,7 @@ public class AssertRetry {
      *
      * MessageConsumer consumer = session.createConsumer(queue);
      * connection.start();
-     * Supplier&lt;String&gt; messageText = new Supplier<>() {
+     * Supplier&lt;String&gt; messageText = new Supplier&lt;&gt;() {
      *   {@literal @}Override
      *    public String get() throws JMSException {
      *       TextMessage m = (TextMessage) consumer.receiveNoWait();  // polling for messages, non blocking

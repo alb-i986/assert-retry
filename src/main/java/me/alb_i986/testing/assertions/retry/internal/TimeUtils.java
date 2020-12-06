@@ -40,8 +40,8 @@ public class TimeUtils {
      * <p>
      * Examples:
      * <pre>
-     * prettyPrint(60001) -> "1m 1ms"
-     * prettyPrint(24 * HOURS_IN_MILLIS) -> "24h" // not "1d"
+     * prettyPrint(60001) -&gt; "1m 1ms"
+     * prettyPrint(24 * HOURS_IN_MILLIS) -&gt; "24h" // not "1d"
      * </pre>
      */
     public static String prettyPrint(long millis) {
