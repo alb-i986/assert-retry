@@ -6,7 +6,7 @@ import org.mockito.Mockito;
 import java.util.concurrent.TimeUnit;
 
 import me.alb_i986.testing.assertions.retry.RetryConfigBuilder;
-import me.alb_i986.testing.assertions.retry.Supplier;
+import java.util.function.Supplier;
 import me.alb_i986.testing.assertions.Suppliers;
 
 import static me.alb_i986.testing.assertions.AssertRetry.*;

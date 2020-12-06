@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import me.alb_i986.testing.assertions.AssertRetry;
-import me.alb_i986.testing.assertions.retry.Supplier;
+import java.util.function.Supplier;
 
 /**
  * The core implementation of the {@link AssertRetry} methods.

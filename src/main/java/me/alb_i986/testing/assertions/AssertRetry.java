@@ -5,12 +5,12 @@ import org.hamcrest.Matcher;
 import org.hamcrest.core.Is;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import me.alb_i986.testing.assertions.retry.internal.AssertRetryEngine;
 import me.alb_i986.testing.assertions.retry.internal.RetryAssertionError;
 import me.alb_i986.testing.assertions.retry.internal.RetryConfig;
 import me.alb_i986.testing.assertions.retry.RetryConfigBuilder;
-import me.alb_i986.testing.assertions.retry.Supplier;
 
 /**
  * Assertion methods allowing for making assertions <i>with tolerance</i>,

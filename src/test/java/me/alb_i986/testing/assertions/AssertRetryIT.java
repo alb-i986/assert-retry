@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import me.alb_i986.testing.assertions.retry.Supplier;
+import java.util.function.Supplier;
 import me.alb_i986.testing.assertions.retry.internal.WaitStrategies;
 
 import static me.alb_i986.testing.assertions.AssertRetry.*;
@@ -22,7 +22,7 @@ public class AssertRetryIT {
             List<String> actuals = Arrays.asList("a", "b", "c");
 
             @Override
-            public String get() throws Exception {
+            public String get() {
                 return actuals.get(i++);
             }
         };
@@ -41,7 +41,7 @@ public class AssertRetryIT {
     public void retryWithTimeout_supplierNeverMatches() {
         Supplier<String> actual = new Supplier<String>() {
             @Override
-            public String get() throws Exception {
+            public String get() {
                 return "a";
             }
         };
@@ -60,7 +60,7 @@ public class AssertRetryIT {
             List<String> actuals = Arrays.asList("a", "b", "c");
 
             @Override
-            public String get() throws Exception {
+            public String get() {
                 return actuals.get(i++);
             }
         };

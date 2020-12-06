@@ -1,6 +1,6 @@
 package me.alb_i986.testing.assertions;
 
-import me.alb_i986.testing.assertions.retry.Supplier;
+import java.util.function.Supplier;
 
 public class Suppliers {
 
