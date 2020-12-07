@@ -7,25 +7,42 @@ public class Timeout {
     private final long timeout;
     private final TimeUnit timeoutUnit;
 
-    private long startTimeNanos;
+    private Long startTimeNanos;
 
     public Timeout(long timeout, TimeUnit timeoutUnit) {
         this.timeout = timeout;
         this.timeoutUnit = timeoutUnit;
-        restart();
     }
 
     //TODO allow unit tests to inject a mocked Clock (with Joda time or jdk8)
 
     /**
-     * Reset the timeout so that it starts over.
+     * @throws IllegalStateException if the timeout has already been started and not reset
      */
-    public void restart() {
+    public void start() {
+        if (startTimeNanos != null) {
+            throw new IllegalStateException("Timeout had already been started and not reset");
+        }
         this.startTimeNanos = System.nanoTime();
     }
 
     /**
-     * @return true if the timeout has expired since the last invocation to {@link #restart()}
+     * Reset the timeout so that it can be started again.
+     */
+    public void reset() {
+        this.startTimeNanos = null;
+    }
+
+    /**
+     * First reset, and then start the timeout.
+     */
+    public void restart() {
+        reset();
+        start();
+    }
+
+    /**
+     * @return true if the timeout has expired since it was started
      */
     public boolean isExpired() {
         return getElapsedTimeMillis() > timeoutUnit.toMillis(timeout);
