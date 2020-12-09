@@ -8,32 +8,32 @@ import static org.junit.Assert.*;
 
 public class TimeoutTest {
 
-    private final Timeout oneSecondTimeout = new Timeout(1, TimeUnit.SECONDS);
+    private final Timeout aHundredMillisTimeout = new Timeout(100, TimeUnit.MILLISECONDS);
 
     @Test
-    public void timeoutExpired() throws Exception {
-        oneSecondTimeout.start();
+    public void timeoutExpired() throws InterruptedException {
+        aHundredMillisTimeout.start();
 
-        Thread.sleep(1000);
+        Thread.sleep(105);
 
-        assertTrue(oneSecondTimeout.isExpired());
+        assertTrue(aHundredMillisTimeout.isExpired());
     }
 
     @Test
-    public void timeoutNotExpired() throws Exception {
-        oneSecondTimeout.start();
+    public void timeoutNotExpired() throws InterruptedException {
+        aHundredMillisTimeout.start();
 
         Thread.sleep(20);
 
-        assertFalse(oneSecondTimeout.isExpired());
+        assertFalse(aHundredMillisTimeout.isExpired());
     }
 
     @Test
     public void timeoutAlreadyStarted() {
-        oneSecondTimeout.start();
+        aHundredMillisTimeout.start();
 
         try {
-            oneSecondTimeout.start();
+            aHundredMillisTimeout.start();
             fail("did not throw as expected");
         } catch (IllegalStateException e) {
             // expected
@@ -42,9 +42,11 @@ public class TimeoutTest {
 
     @Test
     public void canStartAgainAfterReset() {
-        oneSecondTimeout.start();
+        // given
+        aHundredMillisTimeout.start();
 
-        oneSecondTimeout.reset();
-        oneSecondTimeout.start();
+        // when
+        aHundredMillisTimeout.reset();
+        aHundredMillisTimeout.start();
     }
 }

@@ -1,8 +1,20 @@
 package me.alb_i986.testing.assertions.retry.internal;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 public class Timeout {
+
+    /**
+     * A timeout which never expires.
+     */
+    public static final Timeout INFINITE_TIMEOUT = new Timeout(Long.MAX_VALUE, TimeUnit.DAYS) {
+        @Override
+        public boolean isExpired() {
+            return false;
+        }
+    };
 
     private final long timeout;
     private final TimeUnit timeoutUnit;
@@ -50,5 +62,9 @@ public class Timeout {
 
     public long getElapsedTimeMillis() {
         return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTimeNanos);
+    }
+
+    public Duration getDuration() {
+        return Duration.of(timeoutUnit.toNanos(timeout), ChronoUnit.NANOS);
     }
 }

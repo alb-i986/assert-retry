@@ -1,27 +1,31 @@
-package me.alb_i986.testing.assertions.retry.internal;
+package me.alb_i986.testing.assertions.retry;
+
+import me.alb_i986.testing.assertions.retry.internal.Timeout;
 
 import java.util.concurrent.TimeUnit;
 
-import me.alb_i986.testing.assertions.AssertRetry;
-import me.alb_i986.testing.assertions.retry.RetryConfigBuilder;
-
 /**
- * Holds the configuration parameters for {@link AssertRetry} methods. Immutable object.
- * <p>
+ * Immutable.
  * Use {@link RetryConfigBuilder} to build an instance.
+ *
+ * @see RetryConfigBuilder
  */
 public class RetryConfig {
 
     private final boolean retryOnException;
-    private final int maxAttempts;
+    private final Long maxAttempts;
     private final Runnable waitStrategy;
     private final Timeout timeout;
 
-    public RetryConfig(int maxAttempts, Runnable waitStrategy, boolean retryOnException, Timeout timeout) {
+    RetryConfig(Long maxAttempts, Runnable waitStrategy, boolean retryOnException, Timeout timeout) {
         this.maxAttempts = maxAttempts;
         this.waitStrategy = waitStrategy;
         this.retryOnException = retryOnException;
         this.timeout = timeout;
+    }
+
+    public static RetryConfigBuilder builder() {
+        return new RetryConfigBuilder();
     }
 
     /**
@@ -32,9 +36,9 @@ public class RetryConfig {
     }
 
     /**
-     * @see RetryConfigBuilder#maxAttempts(int)
+     * @see RetryConfigBuilder#maxAttempts(long)
      */
-    public int getMaxAttempts() {
+    public Long getMaxAttempts() {
         return maxAttempts;
     }
 
