@@ -26,13 +26,17 @@ public class AssertRetryIT {
         ));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void retryWithTimeout_supplierNeverMatches() {
-        assertThat(Suppliers.id("a"), eventually(containsString("c"), RetryConfig.builder()
-                .timeoutAfter(1, TimeUnit.SECONDS)
-                .waitStrategy(WaitStrategies.sleep(100, TimeUnit.MILLISECONDS))
-                .retryOnException(false)
-        ));
+        try {
+            assertThat(Suppliers.id("a"), eventually(containsString("c"), RetryConfig.builder()
+                    .timeoutAfter(1, TimeUnit.SECONDS)
+                    .waitStrategy(WaitStrategies.sleep(100, TimeUnit.MILLISECONDS))
+                    .retryOnException(false)
+            ));
+        } catch (AssertionError e) {
+            // expected
+        }
     }
 
     @Test
