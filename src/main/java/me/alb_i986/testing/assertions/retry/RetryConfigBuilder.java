@@ -115,7 +115,7 @@ public class RetryConfigBuilder {
         } else if (timeout == null) {
             timeout = Timeout.INFINITE_TIMEOUT;
         } else { // maxAttempts == null
-            maxAttempts = Long.MAX_VALUE;
+            maxAttempts = null;
         }
         if (retryOnException == null) {
             throw new IllegalStateException("Should we retry in case the Supplier throws?");

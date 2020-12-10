@@ -86,11 +86,11 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
                 return false;
             }
 
-            if (config.getMaxAttempts() == Long.MAX_VALUE || i < config.getMaxAttempts() - 1) {
+            if (config.getMaxAttempts() == null || i < config.getMaxAttempts() - 1) {
                 config.getWaitStrategy().run();
             }
 
-            if (config.getMaxAttempts() < Long.MAX_VALUE && i == config.getMaxAttempts() - 1) { // last attempt?
+            if (config.getMaxAttempts() != null && i == config.getMaxAttempts() - 1) { // last attempt?
                 break;
             }
             i++;
@@ -106,16 +106,16 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
                 .appendDescriptionOf(matcher);
 
         boolean bothDefined = false;
-        if (config.getMaxAttempts() != Long.MAX_VALUE && config.getTimeout() != Timeout.INFINITE_TIMEOUT) {
+        if (config.getMaxAttempts() != null && config.getTimeout() != Timeout.INFINITE_TIMEOUT) {
             bothDefined = true;
         }
-        if (config.getMaxAttempts() != Long.MAX_VALUE) {
+        if (config.getMaxAttempts() != null) {
             description.appendText(" within " + config.getMaxAttempts() + " attempts");
         }
         if (bothDefined) {
             description.appendText(" and");
         }
-        if (config.getMaxAttempts() != Long.MAX_VALUE && config.getTimeout() != Timeout.INFINITE_TIMEOUT) {
+        if (config.getMaxAttempts() != null && config.getTimeout() != Timeout.INFINITE_TIMEOUT) {
             description.appendText(" within " + TimeUtils.prettyPrint(config.getTimeout().getDuration().toMillis()));
         }
     }
