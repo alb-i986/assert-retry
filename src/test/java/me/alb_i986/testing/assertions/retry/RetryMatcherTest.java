@@ -3,7 +3,6 @@ package me.alb_i986.testing.assertions.retry;
 import me.alb_i986.testing.assertions.retry.internal.WaitStrategies;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnit;
@@ -15,8 +14,7 @@ import java.util.function.Supplier;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class RetryMatcherTest {
 
@@ -73,13 +71,14 @@ public class RetryMatcherTest {
                 .retryOnException(false)
                 .build();
        
-        RetryMatcher<Integer> sut = new RetryMatcher<>(is(10), config);
+        RetryMatcher<Integer> sut = new RetryMatcher<>(is(11), config);
 
         // when
         assertFalse(sut.matches(supplierSpy));
 
-        verify(supplierSpy, times(6)).get();
-        verify(waitStrategySpy, times(4)).run();
+        verify(supplierSpy, atLeast(10)).get();
+        verify(supplierSpy, atMost(11)).get();
+        verify(waitStrategySpy, times(10)).run();
     }
 
     @Test
@@ -116,7 +115,8 @@ public class RetryMatcherTest {
         // when
         assertFalse(sut.matches(supplierSpy));
 
-        verify(supplierSpy, times(10)).get();
+        verify(supplierSpy, atLeast(9)).get();
+        verify(supplierSpy, atMost(11)).get();
         verify(waitStrategySpy, times(9)).run();
     }
 
