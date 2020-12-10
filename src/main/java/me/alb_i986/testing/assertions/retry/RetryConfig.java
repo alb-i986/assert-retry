@@ -12,16 +12,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class RetryConfig {
 
-    private final boolean retryOnException;
-    private final Long maxAttempts;
-    private final Runnable waitStrategy;
     private final Timeout timeout;
+    private final Runnable waitStrategy;
+    private final boolean retryOnException;
 
-    RetryConfig(Long maxAttempts, Runnable waitStrategy, boolean retryOnException, Timeout timeout) {
-        this.maxAttempts = maxAttempts;
+    RetryConfig(Timeout timeout, Runnable waitStrategy, boolean retryOnException) {
+        this.timeout = timeout;
         this.waitStrategy = waitStrategy;
         this.retryOnException = retryOnException;
-        this.timeout = timeout;
     }
 
     public static RetryConfigBuilder builder() {
@@ -29,17 +27,10 @@ public class RetryConfig {
     }
 
     /**
-     * @see RetryConfigBuilder#retryOnException(boolean)
+     * @see RetryConfigBuilder#timeoutAfter(long, TimeUnit)
      */
-    public boolean isRetryOnException() {
-        return retryOnException;
-    }
-
-    /**
-     * @see RetryConfigBuilder#maxAttempts(long)
-     */
-    public Long getMaxAttempts() {
-        return maxAttempts;
+    public Timeout getTimeout() {
+        return timeout;
     }
 
     /**
@@ -50,9 +41,9 @@ public class RetryConfig {
     }
 
     /**
-     * @see RetryConfigBuilder#timeoutAfter(long, TimeUnit)
+     * @see RetryConfigBuilder#retryOnException(boolean)
      */
-    public Timeout getTimeout() {
-        return timeout;
+    public boolean isRetryOnException() {
+        return retryOnException;
     }
 }

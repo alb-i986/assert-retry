@@ -12,8 +12,30 @@ public class RetryConfigBuilder {
 
     private Runnable waitStrategy;
     private Boolean retryOnException;
-    private Long maxAttempts;
     private Timeout timeout;
+
+    /**
+     * Stop retrying when the timeout expires.
+     *
+     * @throws IllegalArgumentException if time is not a positive number
+     */
+    public RetryConfigBuilder timeoutAfter(long time, TimeUnit timeUnit) {
+        if (time <= 0) {
+            throw new IllegalArgumentException("time must be positive");
+        }
+        if (timeUnit == null) {
+            throw new IllegalArgumentException("timeUnit is null");
+        }
+        return timeout(new Timeout(time, timeUnit));
+    }
+
+    protected RetryConfigBuilder timeout(Timeout timeout) {
+        if (timeout == null) {
+            throw new IllegalArgumentException("null timeout");
+        }
+        this.timeout = timeout;
+        return this;
+    }
 
     /**
      * Set {@link WaitStrategies#sleep(long, TimeUnit)} as the wait strategy.
@@ -59,42 +81,6 @@ public class RetryConfigBuilder {
     }
 
     /**
-     * How many times to run the assertion for, in case it fails.
-     *
-     * @throws IllegalArgumentException if n &lt; 1
-     */
-    public RetryConfigBuilder maxAttempts(long n) {
-        if (n < 1) {
-            throw new IllegalArgumentException("maxAttempts < 1");
-        }
-        this.maxAttempts = n;
-        return this;
-    }
-
-    /**
-     * Stop retrying when the timeout expires.
-     *
-     * @throws IllegalArgumentException if time is not a positive number
-     */
-    public RetryConfigBuilder timeoutAfter(long time, TimeUnit timeUnit) {
-        if (time <= 0) {
-            throw new IllegalArgumentException("time must be positive");
-        }
-        if (timeUnit == null) {
-            throw new IllegalArgumentException("timeUnit is null");
-        }
-        return timeout(new Timeout(time, timeUnit));
-    }
-
-    protected RetryConfigBuilder timeout(Timeout timeout) {
-        if (timeout == null) {
-            throw new IllegalArgumentException("null timeout");
-        }
-        this.timeout = timeout;
-        return this;
-    }
-
-    /**
      * Creates and returns an instance of {@link RetryConfig},
      * configured according to the previous calls to the setter methods.
      *
@@ -110,20 +96,15 @@ public class RetryConfigBuilder {
 //        int maxAttempts = this.maxAttempts == null ? DefaultValues.MAX_ATTEMPTS : this.maxAttempts;
 //        Timeout timeout = this.timeout == null ? DefaultValues.TIMEOUT : this.timeout;
 
-        if (maxAttempts == null && timeout == null) {
-            throw new IllegalStateException("You must specify either the timeout or the max number attempts");
-        } else if (timeout == null) {
-            timeout = Timeout.INFINITE_TIMEOUT;
-        } else { // maxAttempts == null
-            maxAttempts = null;
-        }
-        if (retryOnException == null) {
-            throw new IllegalStateException("Should we retry in case the Supplier throws?");
+        if (timeout == null) {
+            throw new IllegalStateException("The timeout must be specified");
         }
         if (waitStrategy == null) {
             throw new IllegalStateException("The wait strategy must be specified");
         }
-
-        return new RetryConfig(maxAttempts, waitStrategy, retryOnException, timeout);
+        if (retryOnException == null) {
+            throw new IllegalStateException("Should we retry in case the Supplier throws an exception?");
+        }
+        return new RetryConfig(timeout, waitStrategy, retryOnException);
     }
 }
