@@ -112,7 +112,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
 
     private enum FailureReason {
         TIMEOUT_EXPIRED("The timeout was reached and none of the actual values matched"),
-        SUPPLIER_THREW("Supplier threw"),
+        SUPPLIER_THREW("The Supplier threw"),
         ;
 
         private final String description;

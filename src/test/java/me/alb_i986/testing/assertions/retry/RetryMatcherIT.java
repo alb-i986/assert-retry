@@ -49,4 +49,54 @@ public class RetryMatcherIT {
                     "           - <6>"));
         }
     }
+
+    @Test
+    public void supplierThrowsButEventuallyMatches() {
+        assertThat(Suppliers.throwing(3, "found"),
+                RetryMatcher.eventually(is("found"),
+                        RetryConfig.builder()
+                                .timeoutAfter(50, TimeUnit.MILLISECONDS)
+                                .sleepBetweenAttempts(10, TimeUnit.MILLISECONDS)
+                                .retryOnException(true)
+                ));
+    }
+
+    @Test
+    public void supplierThrowsAndEventuallyDoesNotMatch() {
+        try {
+            assertThat(Suppliers.throwing(3, "found"),
+                    RetryMatcher.eventually(is("notfound"),
+                            RetryConfig.builder()
+                                    .timeoutAfter(50, TimeUnit.MILLISECONDS)
+                                    .sleepBetweenAttempts(10, TimeUnit.MILLISECONDS)
+                                    .retryOnException(true)
+                    ));
+            fail("expected to fail");
+        } catch (AssertionError e) {
+            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"notfound\" within 50ms\n" +
+                    "     but: The timeout was reached and none of the actual values matched\n" +
+                    "          Actual values (in order of appearance):\n" +
+                    "           - \"found\"\n" +
+                    "           - \"found\"\n" +
+                    "           - \"found\""));
+        }
+    }
+
+    @Test
+    public void supplierThrowsAndRetryOnExceptionIsOff() {
+        try {
+            assertThat(Suppliers.throwing(),
+                    RetryMatcher.eventually(is("notfound"),
+                            RetryConfig.builder()
+                                    .timeoutAfter(50, TimeUnit.MILLISECONDS)
+                                    .sleepBetweenAttempts(10, TimeUnit.MILLISECONDS)
+                                    .retryOnException(false)
+                    ));
+            fail("expected to fail");
+        } catch (AssertionError e) {
+            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"notfound\" within 50ms\n" +
+                    "     but: The Supplier threw\n" +
+                    "          Actual values (in order of appearance):"));
+        }
+    }
 }

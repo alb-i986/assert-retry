@@ -53,7 +53,11 @@ public class Suppliers {
     }
 
     public static Supplier<String> throwing() {
-        return new ThrowingSupplier();
+        return new ThrowingSupplier(Integer.MAX_VALUE, null);
+    }
+
+    public static Supplier<String> throwing(int throwFor, String actualValue) {
+        return new ThrowingSupplier(throwFor, actualValue);
     }
 
     private static class AscendingIntegersSupplier implements Supplier<Integer> {
@@ -70,11 +74,21 @@ public class Suppliers {
     }
 
     private static class ThrowingSupplier implements Supplier<String> {
-        private int i;
+        private final int throwTimes;
+        private final String value;
+        private int i = 0;
+
+        private ThrowingSupplier(int throwTimes, String value) {
+            this.throwTimes = throwTimes;
+            this.value = value;
+        }
 
         @Override
         public String get() {
-            throw new RuntimeException("Supplier failed");
+            if (i++ < throwTimes) {
+                throw new RuntimeException("Supplier failed");
+            }
+            return value;
         }
     }
 }
