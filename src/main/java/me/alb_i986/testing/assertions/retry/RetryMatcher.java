@@ -81,7 +81,11 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
                 return false;
             }
 
-            config.getWaitStrategy().run();
+            try {
+                config.getWaitStrategy().run();
+            } catch (Exception e) {
+                // try again
+            }
         }
     }
 

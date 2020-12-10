@@ -119,4 +119,17 @@ public class RetryMatcherTest {
         verify(supplierSpy, times(10)).get();
         verify(waitStrategySpy, times(9)).run();
     }
+
+    @Test
+    public void shouldNotFailMiserablyIfTheWaitStrategyThrows() {
+        RetryConfig config = new RetryConfigBuilder()
+                .timeoutAfter(100, TimeUnit.MILLISECONDS)
+                .waitStrategy(() -> {throw new RuntimeException("asd");})
+                .retryOnException(false)
+                .build();
+
+        RetryMatcher<Integer> sut = new RetryMatcher<>(is(5), config);
+
+        assertTrue(sut.matches(supplierSpy));
+    }
 }
