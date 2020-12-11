@@ -64,21 +64,24 @@ public class RetryMatcherIT {
     @Test
     public void supplierThrowsAndEventuallyDoesNotMatch() {
         try {
-            assertThat(Suppliers.throwing(3, "found"),
-                    RetryMatcher.eventually(is("notfound"),
+            assertThat(Suppliers.throwing(3, "never matching actual"),
+                    RetryMatcher.eventually(is("expected value"),
                             RetryConfig.builder()
                                     .timeoutAfter(50, TimeUnit.MILLISECONDS)
                                     .sleepBetweenAttempts(10, TimeUnit.MILLISECONDS)
                                     .retryOnException(true)
                     ));
-            fail("expected to fail");
+            fail("exception expected");
         } catch (AssertionError e) {
-            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"notfound\" within 50ms\n" +
+            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"expected value\" within 50ms\n" +
                     "     but: The timeout was reached and none of the actual values matched\n" +
                     "          Actual values (in order of appearance):\n" +
-                    "           - \"found\"\n" +
-                    "           - \"found\"\n" +
-                    "           - \"found\""));
+                    "           - thrown java.lang.RuntimeException: Supplier failed\n" +
+                    "           - thrown java.lang.RuntimeException: Supplier failed\n" +
+                    "           - thrown java.lang.RuntimeException: Supplier failed\n" +
+                    "           - \"never matching actual\"\n" +
+                    "           - \"never matching actual\"\n" +
+                    "           - \"never matching actual\""));
         }
     }
 
@@ -86,7 +89,7 @@ public class RetryMatcherIT {
     public void supplierThrowsAndRetryOnExceptionIsOff() {
         try {
             assertThat(Suppliers.throwing(),
-                    RetryMatcher.eventually(is("notfound"),
+                    RetryMatcher.eventually(is("expected value"),
                             RetryConfig.builder()
                                     .timeoutAfter(50, TimeUnit.MILLISECONDS)
                                     .sleepBetweenAttempts(10, TimeUnit.MILLISECONDS)
@@ -94,9 +97,10 @@ public class RetryMatcherIT {
                     ));
             fail("expected to fail");
         } catch (AssertionError e) {
-            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"notfound\" within 50ms\n" +
+            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"expected value\" within 50ms\n" +
                     "     but: The Supplier threw\n" +
-                    "          Actual values (in order of appearance):"));
+                    "          Actual values (in order of appearance):\n" +
+                    "           - thrown java.lang.RuntimeException: Supplier failed"));
         }
     }
 }

@@ -1,10 +1,8 @@
 package me.alb_i986.testing.assertions.retry;
 
 import me.alb_i986.testing.assertions.retry.internal.TimeUtils;
-import me.alb_i986.testing.assertions.retry.internal.Timeout;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.hamcrest.StringDescription;
 import org.hamcrest.TypeSafeMatcher;
 
 import java.util.ArrayList;
@@ -33,9 +31,9 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
     private final Matcher<T> matcher;
     private final RetryConfig config;
 
-    private List<T> suppliedValues = new ArrayList<>();
-    private List<StringDescription> mismatchDescriptions = new ArrayList<>();
-    private List<Exception> supplierExceptions = new ArrayList<>();
+
+    private List<AssertRetryResult> retryResults = new ArrayList<>();
+
     private FailureReason failureReason;
 
     RetryMatcher(Matcher<T> matcher, RetryConfig config) {
@@ -51,20 +49,18 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
         // TODO move to slf4j
 
         while (true) {
+            AssertRetryResult result = new AssertRetryResult();
+            retryResults.add(result);
             try {
                 T actual = actualValuesSupplier.get();
-                suppliedValues.add(actual);
+                result.suppliedValue(actual);
 
                 if (matcher.matches(actual)) { // assertion PASSED!
+                    result.actualMatches();
                     return true;
                 }
-
-                StringDescription mismatchDescription = new StringDescription();
-                matcher.describeMismatch(actual, mismatchDescription);
-                mismatchDescriptions.add(mismatchDescription);
-
             } catch (Exception e) {
-                supplierExceptions.add(e);
+                result.supplierThrew(e);
                 if (!config.isRetryOnException()) {
                     failureReason = FailureReason.SUPPLIER_THREW;
                     return false;
@@ -102,11 +98,10 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
                 .appendText(System.lineSeparator())
                 .appendText("          Actual values (in order of appearance):");
 
-        //TODO use the collected mismatch descriptions, and the collected exceptions throw by the Supplier
-        for (T supplied : suppliedValues) {
+        for (AssertRetryResult retryResult : retryResults) {
             mismatchDescription.appendText(System.lineSeparator());
             mismatchDescription.appendText("           - ");
-            mismatchDescription.appendValue(supplied);
+            mismatchDescription.appendDescriptionOf(retryResult);
         }
     }
 
@@ -171,12 +166,12 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
      * an AssertionError similar to the following will be thrown:
      * <pre>
      * java.lang.AssertionError:
-     *     Expected: supplied values to *eventually* match a string containing "expected content" within 60s
-     *         but: The timeout was reached and none of the actual values matched
-     *         Actual values (in order of appearance):
-     *          - "some content"
-     *          - null
-     *          - "some other content"
+     * Expected: supplied values to *eventually* match a string containing "expected content" within 60s
+     *      but: The timeout was reached and none of the actual values matched
+     *           Actual values (in order of appearance):
+     *            - thrown javax.jms.MessageFormatException: Blah blah
+     *            - "some content"
+     *            - "some other content"
      * </pre>
      *
      * <h3>Configuration</h3>
