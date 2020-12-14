@@ -152,11 +152,11 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
      *    }
      * };
      *
-     * assertThat(messageText, eventually(containsString("expected content")),
+     * assertThat(messageText, eventually(containsString("expected content"),
      *         RetryConfig.builder()
-     *             .timeoutAfter(60, TimeUnit.SECONDS)
-     *             .sleepBetweenAttempts(5, TimeUnit.SECONDS)
-     *             .retryOnException(true));
+     *             .timeoutAfter(Duration.ofSeconds(60))
+     *             .sleepBetweenAttempts(Duration.ofSeconds(5))
+     *             .retryOnException(true)));
      * </pre>
      *
      * The first few lines set up the supplier of the actual values,
