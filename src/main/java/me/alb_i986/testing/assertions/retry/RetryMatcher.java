@@ -1,5 +1,6 @@
 package me.alb_i986.testing.assertions.retry;
 
+import me.alb_i986.testing.assertions.retry.internal.AssertRetryResult;
 import me.alb_i986.testing.assertions.retry.internal.TimeFormatter;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;

@@ -1,4 +1,4 @@
-package me.alb_i986.testing.assertions.retry;
+package me.alb_i986.testing.assertions.retry.internal;
 
 import org.hamcrest.Description;
 import org.hamcrest.SelfDescribing;
