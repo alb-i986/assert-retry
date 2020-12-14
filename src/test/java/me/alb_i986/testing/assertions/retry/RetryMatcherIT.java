@@ -2,13 +2,15 @@ package me.alb_i986.testing.assertions.retry;
 
 import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 public class RetryMatcherIT {
+
+    private static final Duration FIFTY_MILLIS = Duration.ofMillis(50);
 
     @Test
     public void supplierEventuallyReturnsMatchingValue() {
@@ -17,8 +19,8 @@ public class RetryMatcherIT {
         assertThat(Suppliers.fromList("a", "b", "c"),
                 RetryMatcher.eventually(containsString("c"),
                         RetryConfig.builder()
-                                .timeoutAfter(50, TimeUnit.MILLISECONDS)
-                                .sleepBetweenAttempts(10, TimeUnit.MILLISECONDS)
+                                .timeoutAfter(FIFTY_MILLIS)
+                                .sleepBetweenAttempts(Duration.ofMillis(10))
                                 .retryOnException(false)
                 ));
 
@@ -32,8 +34,8 @@ public class RetryMatcherIT {
             assertThat(Suppliers.ascendingIntegersStartingFrom(1),
                     RetryMatcher.eventually(greaterThan(6),
                             RetryConfig.builder()
-                                    .timeoutAfter(50, TimeUnit.MILLISECONDS)
-                                    .sleepBetweenAttempts(10, TimeUnit.MILLISECONDS)
+                                    .timeoutAfter(FIFTY_MILLIS)
+                                    .sleepBetweenAttempts(Duration.ofMillis(10))
                                     .retryOnException(false)
                     ));
             fail("expected to fail");
@@ -55,8 +57,8 @@ public class RetryMatcherIT {
         assertThat(Suppliers.throwing(3, "found"),
                 RetryMatcher.eventually(is("found"),
                         RetryConfig.builder()
-                                .timeoutAfter(50, TimeUnit.MILLISECONDS)
-                                .sleepBetweenAttempts(10, TimeUnit.MILLISECONDS)
+                                .timeoutAfter(FIFTY_MILLIS)
+                                .sleepBetweenAttempts(Duration.ofMillis(10))
                                 .retryOnException(true)
                 ));
     }
@@ -67,8 +69,8 @@ public class RetryMatcherIT {
             assertThat(Suppliers.throwing(3, "never matching actual"),
                     RetryMatcher.eventually(is("expected value"),
                             RetryConfig.builder()
-                                    .timeoutAfter(50, TimeUnit.MILLISECONDS)
-                                    .sleepBetweenAttempts(10, TimeUnit.MILLISECONDS)
+                                    .timeoutAfter(FIFTY_MILLIS)
+                                    .sleepBetweenAttempts(Duration.ofMillis(10))
                                     .retryOnException(true)
                     ));
             fail("exception expected");
@@ -91,8 +93,8 @@ public class RetryMatcherIT {
             assertThat(Suppliers.throwing(),
                     RetryMatcher.eventually(is("expected value"),
                             RetryConfig.builder()
-                                    .timeoutAfter(50, TimeUnit.MILLISECONDS)
-                                    .sleepBetweenAttempts(10, TimeUnit.MILLISECONDS)
+                                    .timeoutAfter(FIFTY_MILLIS)
+                                    .sleepBetweenAttempts(Duration.ofMillis(10))
                                     .retryOnException(false)
                     ));
             fail("expected to fail");

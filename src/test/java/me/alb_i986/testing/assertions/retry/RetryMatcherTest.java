@@ -8,7 +8,7 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import java.util.function.Supplier;
 
 import static org.hamcrest.Matchers.*;
@@ -32,7 +32,7 @@ public class RetryMatcherTest {
     @Test
     public void shouldNotRetryWhenSupplierMatchesTheFirstTime() {
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(500, TimeUnit.MILLISECONDS)
+                .timeoutAfter(Duration.ofMillis(500))
                 .waitStrategy(waitStrategySpy)
                 .retryOnException(false)
                 .build();
@@ -49,7 +49,7 @@ public class RetryMatcherTest {
     @Test
     public void shouldRetryAndEventuallyMatchWhenSupplierMatchesWithinTheTimeout() {
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(500, TimeUnit.MILLISECONDS)
+                .timeoutAfter(Duration.ofMillis(500))
                 .waitStrategy(waitStrategySpy)
                 .retryOnException(false)
                 .build();
@@ -66,7 +66,7 @@ public class RetryMatcherTest {
     @Test
     public void shouldRetryAndEventuallyNotMatchWhenSupplierDoesNotMatchWithinTimeout() {
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(100, TimeUnit.MILLISECONDS)
+                .timeoutAfter(Duration.ofMillis(100))
                 .waitStrategy(waitStrategySpy)
                 .retryOnException(false)
                 .build();
@@ -86,7 +86,7 @@ public class RetryMatcherTest {
         Supplier<String> supplierSpy = Mockito.spy(Suppliers.throwing());
         
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(100, TimeUnit.MILLISECONDS)
+                .timeoutAfter(Duration.ofMillis(100))
                 .waitStrategy(waitStrategySpy)
                 .retryOnException(false)
                 .build();
@@ -105,7 +105,7 @@ public class RetryMatcherTest {
         Supplier<String> supplierSpy = Mockito.spy(Suppliers.throwing());
 
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(100, TimeUnit.MILLISECONDS)
+                .timeoutAfter(Duration.ofMillis(100))
                 .waitStrategy(waitStrategySpy)
                 .retryOnException(true)
                 .build();
@@ -121,9 +121,9 @@ public class RetryMatcherTest {
     }
 
     @Test
-    public void shouldNotFailMiserablyIfTheWaitStrategyThrows() {
+    public void shouldNotFailMiserablyWhenTheWaitStrategyThrows() {
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(100, TimeUnit.MILLISECONDS)
+                .timeoutAfter(Duration.ofMillis(100))
                 .waitStrategy(() -> {throw new RuntimeException("asd");})
                 .retryOnException(false)
                 .build();

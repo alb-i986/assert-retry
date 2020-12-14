@@ -2,13 +2,13 @@ package me.alb_i986.testing.assertions.retry.internal;
 
 import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import static org.junit.Assert.*;
 
 public class TimeoutTest {
 
-    private final Timeout aHundredMillisTimeout = new Timeout(100, TimeUnit.MILLISECONDS);
+    private final Timeout aHundredMillisTimeout = new Timeout(Duration.ofMillis(100));
 
     @Test
     public void timeoutExpired() throws InterruptedException {

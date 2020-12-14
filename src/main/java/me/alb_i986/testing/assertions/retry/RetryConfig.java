@@ -2,10 +2,8 @@ package me.alb_i986.testing.assertions.retry;
 
 import me.alb_i986.testing.assertions.retry.internal.Timeout;
 
-import java.util.concurrent.TimeUnit;
-
 /**
- * Immutable.
+ * Immutable object.
  * Use {@link RetryConfigBuilder} to build an instance.
  *
  * @see RetryConfigBuilder
@@ -26,23 +24,14 @@ public class RetryConfig {
         return new RetryConfigBuilder();
     }
 
-    /**
-     * @see RetryConfigBuilder#timeoutAfter(long, TimeUnit)
-     */
     public Timeout getTimeout() {
         return timeout;
     }
 
-    /**
-     * @see RetryConfigBuilder#waitStrategy(Runnable)
-     */
     public Runnable getWaitStrategy() {
         return waitStrategy;
     }
 
-    /**
-     * @see RetryConfigBuilder#retryOnException(boolean)
-     */
     public boolean isRetryOnException() {
         return retryOnException;
     }

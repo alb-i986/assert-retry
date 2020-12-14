@@ -1,10 +1,10 @@
 package me.alb_i986.testing.assertions.retry;
 
-import me.alb_i986.testing.assertions.retry.internal.Timeout;
 import me.alb_i986.testing.assertions.retry.internal.WaitStrategies;
+import me.alb_i986.testing.assertions.retry.internal.Timeout;
 import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -29,7 +29,7 @@ public class RetryConfigBuilderTest {
     @Test
     public void cantBuildConfigWithoutWaitStrategy() {
         try {
-            sut.timeout(new Timeout(1, TimeUnit.SECONDS))
+            sut.timeout(new Timeout(Duration.ofSeconds(1)))
                     .retryOnException(false)
                     .build();
             fail("exception expected");
@@ -41,7 +41,7 @@ public class RetryConfigBuilderTest {
     @Test
     public void cantBuildConfigWithoutRetryOnException() {
         try {
-            sut.timeout(Timeout.INFINITE_TIMEOUT)
+            sut.timeout(new Timeout(Duration.ofMillis(100)))
                     .waitStrategy(() -> {})
                     .build();
             fail("exception expected");

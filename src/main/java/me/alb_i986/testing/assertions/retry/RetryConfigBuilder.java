@@ -3,7 +3,7 @@ package me.alb_i986.testing.assertions.retry;
 import me.alb_i986.testing.assertions.retry.internal.Timeout;
 import me.alb_i986.testing.assertions.retry.internal.WaitStrategies;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 /**
  * Provides a fluent DSL for configuring the retry mechanism.
@@ -19,14 +19,14 @@ public class RetryConfigBuilder {
      *
      * @throws IllegalArgumentException if time is not a positive number
      */
-    public RetryConfigBuilder timeoutAfter(long time, TimeUnit timeUnit) {
-        if (time <= 0) {
-            throw new IllegalArgumentException("time must be positive");
+    public RetryConfigBuilder timeoutAfter(Duration duration) {
+        if (duration == null) {
+            throw new IllegalArgumentException("Duration must not be null");
         }
-        if (timeUnit == null) {
-            throw new IllegalArgumentException("timeUnit is null");
+        if (duration.isZero() || duration.isNegative()) {
+            throw new IllegalArgumentException("Duration must be positive");
         }
-        return timeout(new Timeout(time, timeUnit));
+        return timeout(new Timeout(duration));
     }
 
     protected RetryConfigBuilder timeout(Timeout timeout) {
@@ -37,22 +37,26 @@ public class RetryConfigBuilder {
         return this;
     }
 
+    public RetryConfigBuilder sleepBetweenAttempts(long millis) {
+        return sleepBetweenAttempts(Duration.ofMillis(millis));
+    }
+
     /**
-     * Set {@link WaitStrategies#sleep(long, TimeUnit)} as the wait strategy.
+     * Set {@link WaitStrategies#sleep(Duration)} as the wait strategy.
      *
-     * @throws IllegalArgumentException if time is not positive, or if timeUnit is null
+     * @throws IllegalArgumentException if the duration is not positive, or if it's null
      *
-     * @see WaitStrategies#sleep(long, TimeUnit)
+     * @see WaitStrategies#sleep(Duration)
      * @see #waitStrategy(Runnable)
      */
-    public RetryConfigBuilder sleepBetweenAttempts(long time, TimeUnit timeUnit) {
-        if (time <= 0) {
-            throw new IllegalArgumentException("time must be positive");
+    public RetryConfigBuilder sleepBetweenAttempts(Duration duration) {
+        if (duration == null) {
+            throw new IllegalArgumentException("Duration must not be null");
         }
-        if (timeUnit == null) {
-            throw new IllegalArgumentException("timeUnit must not be null");
+        if (duration.isZero() || duration.isNegative()) {
+            throw new IllegalArgumentException("Duration must be positive");
         }
-        return waitStrategy(WaitStrategies.sleep(time, timeUnit));
+        return waitStrategy(WaitStrategies.sleep(duration));
     }
 
     /**

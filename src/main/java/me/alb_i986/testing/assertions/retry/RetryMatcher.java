@@ -1,13 +1,13 @@
 package me.alb_i986.testing.assertions.retry;
 
-import me.alb_i986.testing.assertions.retry.internal.TimeUtils;
+import me.alb_i986.testing.assertions.retry.internal.TimeFormatter;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -30,6 +30,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
 
     private final Matcher<T> matcher;
     private final RetryConfig config;
+    private final TimeFormatter timeFormatter;
 
 
     private List<AssertRetryResult> retryResults = new ArrayList<>();
@@ -39,6 +40,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
     RetryMatcher(Matcher<T> matcher, RetryConfig config) {
         this.matcher = matcher;
         this.config = config;
+        this.timeFormatter = TimeFormatter.SINGLETON;
     }
 
     @Override
@@ -80,7 +82,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
             try {
                 config.getWaitStrategy().run();
             } catch (Exception e) {
-                // try again
+                // continue with the next attempt
             }
         }
     }
@@ -89,7 +91,8 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
     public void describeTo(Description description) {
         description.appendText("supplied values to *eventually* match ")
                 .appendDescriptionOf(matcher)
-                .appendText(" within " + TimeUtils.prettyPrint(config.getTimeout().getDuration().toMillis()));
+                .appendText(" within " + timeFormatter.prettyPrint(
+                        config.getTimeout().getDuration()));
     }
 
     @Override
@@ -177,8 +180,8 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
      * <h3>Configuration</h3>
      * The retry mechanism can be configured in terms of:
      * <ul>
-     *     <li>the timeout: {@link RetryConfigBuilder#timeoutAfter(long, TimeUnit)}</li>
-     *     <li>how long to sleep for before retrying: {@link RetryConfigBuilder#sleepBetweenAttempts(long, TimeUnit)}</li>
+     *     <li>the timeout: {@link RetryConfigBuilder#timeoutAfter(Duration)}</li>
+     *     <li>how long to sleep for before retrying: {@link RetryConfigBuilder#sleepBetweenAttempts(Duration)}</li>
      *     <li>or, as an alternative, a custom wait strategy: {@link RetryConfigBuilder#waitStrategy(Runnable)}</li>
      *     <li>whether to retry in case the {@code Supplier} throws: {@link RetryConfigBuilder#retryOnException(boolean)}</li>
      * </ul>
