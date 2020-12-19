@@ -42,7 +42,7 @@ public class RetryConfigBuilderTest {
     public void cantBuildConfigWithoutRetryOnException() {
         try {
             sut.timeout(new Timeout(Duration.ofMillis(100)))
-                    .waitStrategy(() -> {})
+                    .waitStrategy(WaitStrategies.sleep(10))
                     .build();
             fail("exception expected");
         } catch (IllegalStateException e) {

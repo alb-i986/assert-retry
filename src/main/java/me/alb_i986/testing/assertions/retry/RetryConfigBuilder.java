@@ -10,7 +10,7 @@ import java.time.Duration;
  */
 public class RetryConfigBuilder {
 
-    private Runnable waitStrategy;
+    private WaitStrategy waitStrategy;
     private Boolean retryOnException;
     private Timeout timeout;
 
@@ -37,8 +37,8 @@ public class RetryConfigBuilder {
         return this;
     }
 
-    public RetryConfigBuilder sleepBetweenAttempts(long millis) {
-        return sleepBetweenAttempts(Duration.ofMillis(millis));
+    public RetryConfigBuilder sleepForMillis(long millis) {
+        return sleepFor(Duration.ofMillis(millis));
     }
 
     /**
@@ -47,9 +47,9 @@ public class RetryConfigBuilder {
      * @throws IllegalArgumentException if the duration is not positive, or if it's null
      *
      * @see WaitStrategies#sleep(Duration)
-     * @see #waitStrategy(Runnable)
+     * @see #waitStrategy(WaitStrategy)
      */
-    public RetryConfigBuilder sleepBetweenAttempts(Duration duration) {
+    public RetryConfigBuilder sleepFor(Duration duration) {
         if (duration == null) {
             throw new IllegalArgumentException("Duration must not be null");
         }
@@ -68,7 +68,7 @@ public class RetryConfigBuilder {
      * e.g. "waiting for a message to be published on the queue myQueue".
      * This will make the logs more meaningful.
      */
-    public RetryConfigBuilder waitStrategy(Runnable waitStrategy) { // TODO WaitStrategy instead of Runnable, so that we can enforce a getDescription() method
+    public RetryConfigBuilder waitStrategy(WaitStrategy waitStrategy) {
         if (waitStrategy == null) {
             throw new IllegalArgumentException("null strategy");
         }

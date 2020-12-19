@@ -1,64 +1,97 @@
 package me.alb_i986.testing.assertions.retry;
 
+import me.alb_i986.testing.assertions.retry.internal.Timeout;
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.function.Supplier;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
+/**
+ * Testing the integration with {@link org.hamcrest.MatcherAssert#assertThat(Object, Matcher)}.
+ * <p>
+ * Still mocking the clock not to get flaky tests.
+ */
 public class RetryMatcherIntegrationTest {
 
-    private static final Duration FIFTY_MILLIS = Duration.ofMillis(50);
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule();
+
+    @Mock
+    private Supplier<String> supplierMock;
+
+    @Mock
+    private Clock clockMock;
+
+    private Timeout timeoutWithMockedClock;
+
+    @Before
+    public void setUp() {
+        given(clockMock.instant())
+                .willReturn(Instant.EPOCH)
+                .willReturn(Instant.EPOCH.plusMillis(10))
+                .willReturn(Instant.EPOCH.plusMillis(20))
+                .willReturn(Instant.EPOCH.plusMillis(30))
+                .willReturn(Instant.EPOCH.plusMillis(40))
+                .willReturn(Instant.EPOCH.plusMillis(50));
+
+        timeoutWithMockedClock = new Timeout(Duration.ofMillis(49), clockMock);
+    }
 
     @Test
-    public void supplierEventuallyReturnsMatchingValue() {
-        long startTimeMillis = System.currentTimeMillis();
-
-        assertThat(Suppliers.fromList("a", "b", "c"),
-                RetryMatcher.eventually(containsString("c"),
+    public void supplierEventuallyReturnsMatchingValueWithinTimeout() {
+        assertThat(TestSuppliers.fromList("a", "b", "c", "d", "e", "f"),
+                RetryMatcher.eventually(containsString("e"),
                         RetryConfig.builder()
-                                .timeoutAfter(FIFTY_MILLIS)
-                                .sleepBetweenAttempts(Duration.ofMillis(10))
+                                .timeout(timeoutWithMockedClock)
+                                .sleepForMillis(1)
                                 .retryOnException(false)
                 ));
-
-        long elapsedTimeMillis = System.currentTimeMillis() - startTimeMillis;
-        assertThat(elapsedTimeMillis, allOf(greaterThan(20L), lessThanOrEqualTo(30L)));
     }
 
     @Test
     public void supplierDoesNotMatchWithinTimeout() {
         try {
-            assertThat(Suppliers.ascendingIntegersStartingFrom(1),
-                    RetryMatcher.eventually(greaterThan(6),
+            assertThat(TestSuppliers.fromList("a", "b", "c", "d", "e", "f"),
+                    RetryMatcher.eventually(containsString("f"),
                             RetryConfig.builder()
-                                    .timeoutAfter(FIFTY_MILLIS)
-                                    .sleepBetweenAttempts(Duration.ofMillis(10))
+                                    .timeout(timeoutWithMockedClock)
+                                    .sleepForMillis(1)
                                     .retryOnException(false)
                     ));
             fail("expected to fail");
         } catch (AssertionError e) {
-            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match a value greater than <6> within 50ms\n" +
+            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match a string containing \"f\" within 49ms\n" +
                     "     but: The timeout was reached and none of the actual values matched\n" +
                     "          Actual values (in order of appearance):\n" +
-                    "           - <1>\n" +
-                    "           - <2>\n" +
-                    "           - <3>\n" +
-                    "           - <4>\n" +
-                    "           - <5>\n" +
-                    "           - <6>"));
+                    "           - \"a\"\n" +
+                    "           - \"b\"\n" +
+                    "           - \"c\"\n" +
+                    "           - \"d\"\n" +
+                    "           - \"e\""));
         }
     }
 
     @Test
     public void supplierThrowsButEventuallyMatches() {
-        assertThat(Suppliers.throwing(3, "found"),
-                RetryMatcher.eventually(is("found"),
+        Supplier<String> supplier = TestSuppliers.throwing(4, "found");
+
+        assertThat(supplier, RetryMatcher.eventually(is("found"),
                         RetryConfig.builder()
-                                .timeoutAfter(FIFTY_MILLIS)
-                                .sleepBetweenAttempts(Duration.ofMillis(10))
+                                .timeout(timeoutWithMockedClock)
+                                .sleepForMillis(1)
                                 .retryOnException(true)
                 ));
     }
@@ -66,22 +99,21 @@ public class RetryMatcherIntegrationTest {
     @Test
     public void supplierThrowsAndEventuallyDoesNotMatch() {
         try {
-            assertThat(Suppliers.throwing(3, "never matching actual"),
+            assertThat(TestSuppliers.throwing(3, "never matching actual"),
                     RetryMatcher.eventually(is("expected value"),
                             RetryConfig.builder()
-                                    .timeoutAfter(FIFTY_MILLIS)
-                                    .sleepBetweenAttempts(Duration.ofMillis(10))
+                                    .timeout(timeoutWithMockedClock)
+                                    .sleepForMillis(1)
                                     .retryOnException(true)
                     ));
             fail("exception expected");
         } catch (AssertionError e) {
-            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"expected value\" within 50ms\n" +
+            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"expected value\" within 49ms\n" +
                     "     but: The timeout was reached and none of the actual values matched\n" +
                     "          Actual values (in order of appearance):\n" +
                     "           - thrown java.lang.RuntimeException: Supplier failed\n" +
                     "           - thrown java.lang.RuntimeException: Supplier failed\n" +
                     "           - thrown java.lang.RuntimeException: Supplier failed\n" +
-                    "           - \"never matching actual\"\n" +
                     "           - \"never matching actual\"\n" +
                     "           - \"never matching actual\""));
         }
@@ -89,20 +121,27 @@ public class RetryMatcherIntegrationTest {
 
     @Test
     public void supplierThrowsAndRetryOnExceptionIsOff() {
+        given(supplierMock.get())
+                .willReturn("not expected")
+                .willThrow(new RuntimeException("Supplier failed"));
+        
         try {
-            assertThat(Suppliers.throwing(),
-                    RetryMatcher.eventually(is("expected value"),
-                            RetryConfig.builder()
-                                    .timeoutAfter(FIFTY_MILLIS)
-                                    .sleepBetweenAttempts(Duration.ofMillis(10))
+            assertThat(supplierMock, RetryMatcher.eventually(is("expected value"),
+
+                    RetryConfig.builder()
+                            .timeout(timeoutWithMockedClock)
+                                    .sleepForMillis(1)
                                     .retryOnException(false)
                     ));
             fail("expected to fail");
         } catch (AssertionError e) {
-            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"expected value\" within 50ms\n" +
+            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"expected value\" within 49ms\n" +
                     "     but: The Supplier threw\n" +
                     "          Actual values (in order of appearance):\n" +
+                    "           - \"not expected\"\n" +
                     "           - thrown java.lang.RuntimeException: Supplier failed"));
         }
     }
+
+    //TODO test more real life Matcher's
 }

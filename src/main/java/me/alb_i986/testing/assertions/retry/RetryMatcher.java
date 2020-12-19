@@ -81,7 +81,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
             }
 
             try {
-                config.getWaitStrategy().run();
+                config.getWaitStrategy().waitt();
             } catch (Exception e) {
                 // continue with the next attempt
             }
@@ -155,7 +155,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
      * assertThat(messageText, eventually(containsString("expected content"),
      *         RetryConfig.builder()
      *             .timeoutAfter(Duration.ofSeconds(60))
-     *             .sleepBetweenAttempts(Duration.ofSeconds(5))
+     *             .sleepFor(Duration.ofSeconds(5))
      *             .retryOnException(true)));
      * </pre>
      *
@@ -182,8 +182,8 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
      * The retry mechanism can be configured in terms of:
      * <ul>
      *     <li>the timeout: {@link RetryConfigBuilder#timeoutAfter(Duration)}</li>
-     *     <li>how long to sleep for before retrying: {@link RetryConfigBuilder#sleepBetweenAttempts(Duration)}</li>
-     *     <li>or, as an alternative, a custom wait strategy: {@link RetryConfigBuilder#waitStrategy(Runnable)}</li>
+     *     <li>how long to sleep for before retrying: {@link RetryConfigBuilder#sleepFor(Duration)}</li>
+     *     <li>or, as an alternative, a custom wait strategy: {@link RetryConfigBuilder#waitStrategy(WaitStrategy)}</li>
      *     <li>whether to retry in case the {@code Supplier} throws: {@link RetryConfigBuilder#retryOnException(boolean)}</li>
      * </ul>
      *

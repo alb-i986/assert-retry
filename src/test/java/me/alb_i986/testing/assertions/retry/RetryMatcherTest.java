@@ -1,19 +1,26 @@
 package me.alb_i986.testing.assertions.retry;
 
-import me.alb_i986.testing.assertions.retry.internal.WaitStrategies;
+import me.alb_i986.testing.assertions.retry.internal.Timeout;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.BDDMockito;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.function.Supplier;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 public class RetryMatcherTest {
@@ -23,17 +30,35 @@ public class RetryMatcherTest {
 
     // TODO test also logging http://projects.lidalia.org.uk/slf4j-test/
 
-    @Spy
-    private Runnable waitStrategySpy = WaitStrategies.sleep(10);
+    @Mock
+    private WaitStrategy waitStrategyMock;
 
     @Spy
-    private final Supplier<Integer> supplierSpy = Suppliers.ascendingIntegersStartingFrom(1);
+    private final Supplier<Integer> supplierSpy = TestSuppliers.ascendingIntegersStartingFrom(1);
+
+    @Mock
+    private Clock clockMock;
+
+    private Timeout timeoutMock;
+
+    @Before
+    public void setUp() {
+        given(clockMock.instant())
+                .willReturn(Instant.EPOCH)
+                .willReturn(Instant.EPOCH.plusMillis(10))
+                .willReturn(Instant.EPOCH.plusMillis(20))
+                .willReturn(Instant.EPOCH.plusMillis(30))
+                .willReturn(Instant.EPOCH.plusMillis(40))
+                .willReturn(Instant.EPOCH.plusMillis(50));
+
+        timeoutMock = new Timeout(Duration.ofMillis(49), clockMock);
+    }
 
     @Test
-    public void shouldNotRetryWhenSupplierMatchesTheFirstTime() {
+    public void shouldNotRetryWhenSupplierMatchesTheFirstTime() throws Exception {
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(Duration.ofMillis(500))
-                .waitStrategy(waitStrategySpy)
+                .timeout(timeoutMock)
+                .waitStrategy(waitStrategyMock)
                 .retryOnException(false)
                 .build();
         
@@ -43,14 +68,14 @@ public class RetryMatcherTest {
         assertTrue(sut.matches(supplierSpy));
 
         verify(supplierSpy, times(1)).get();
-        verify(waitStrategySpy, times(0)).run();
+        verify(waitStrategyMock, times(0)).waitt();
     }
 
     @Test
-    public void shouldRetryAndEventuallyMatchWhenSupplierMatchesWithinTheTimeout() {
+    public void shouldRetryAndEventuallyMatchWhenSupplierMatchesWithinTheTimeout() throws Exception {
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(Duration.ofMillis(500))
-                .waitStrategy(waitStrategySpy)
+                .timeout(timeoutMock)
+                .waitStrategy(waitStrategyMock)
                 .retryOnException(false)
                 .build();
         
@@ -60,53 +85,52 @@ public class RetryMatcherTest {
         assertTrue(sut.matches(supplierSpy));
 
         verify(supplierSpy, times(3)).get();
-        verify(waitStrategySpy, times(2)).run();
+        verify(waitStrategyMock, times(2)).waitt();
     }
 
     @Test
-    public void shouldRetryAndEventuallyNotMatchWhenSupplierDoesNotMatchWithinTimeout() {
+    public void shouldRetryAndEventuallyNotMatchWhenSupplierDoesNotMatchWithinTimeout() throws Exception {
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(Duration.ofMillis(100))
-                .waitStrategy(waitStrategySpy)
+                .timeout(timeoutMock)
+                .waitStrategy(waitStrategyMock)
                 .retryOnException(false)
                 .build();
        
-        RetryMatcher<Integer> sut = new RetryMatcher<>(is(11), config);
+        RetryMatcher<Integer> sut = new RetryMatcher<>(is(6), config);
 
         // when
         assertFalse(sut.matches(supplierSpy));
 
-        verify(supplierSpy, atLeast(10)).get();
-        verify(supplierSpy, atMost(11)).get();
-        verify(waitStrategySpy, times(10)).run();
+        verify(supplierSpy, times(5)).get();
+        verify(waitStrategyMock, times(4)).waitt();
     }
 
     @Test
-    public void shouldNotRetryWhenSupplierThrowsGivenRetryOnExceptionIsOff() {
-        Supplier<String> supplierSpy = Mockito.spy(Suppliers.throwing());
-        
+    public void shouldNotRetryWhenSupplierThrowsGivenRetryOnExceptionIsOff() throws Exception {
+        Supplier<String> supplierSpy = Mockito.spy(TestSuppliers.throwing());
+
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(Duration.ofMillis(100))
-                .waitStrategy(waitStrategySpy)
+                .timeout(timeoutMock)
+                .waitStrategy(waitStrategyMock)
                 .retryOnException(false)
                 .build();
-        
+
         RetryMatcher<String> sut = new RetryMatcher<>(is("WHATEVER"), config);
 
         // when
         assertFalse(sut.matches(supplierSpy));
 
         verify(supplierSpy, times(1)).get();
-        verify(waitStrategySpy, times(0)).run();
+        verify(waitStrategyMock, times(0)).waitt();
     }
 
     @Test
-    public void shouldRetryWhenSupplierThrowsGivenRetryOnExceptionIsOn() {
-        Supplier<String> supplierSpy = Mockito.spy(Suppliers.throwing());
+    public void shouldRetryWhenSupplierThrowsGivenRetryOnExceptionIsOn() throws Exception {
+        Supplier<String> supplierSpy = Mockito.spy(TestSuppliers.throwing());
 
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(Duration.ofMillis(100))
-                .waitStrategy(waitStrategySpy)
+                .timeout(timeoutMock)
+                .waitStrategy(waitStrategyMock)
                 .retryOnException(true)
                 .build();
 
@@ -115,21 +139,24 @@ public class RetryMatcherTest {
         // when
         assertFalse(sut.matches(supplierSpy));
 
-        verify(supplierSpy, atLeast(9)).get();
-        verify(supplierSpy, atMost(11)).get();
-        verify(waitStrategySpy, times(9)).run();
+        verify(supplierSpy, times(5)).get();
+        verify(waitStrategyMock, times(4)).waitt();
     }
 
     @Test
-    public void shouldNotFailMiserablyWhenTheWaitStrategyThrows() {
+    public void shouldNotFailMiserablyWhenTheWaitStrategyThrows() throws Exception {
+        willThrow(new RuntimeException("dummy exception")).given(waitStrategyMock).waitt();
+
         RetryConfig config = new RetryConfigBuilder()
-                .timeoutAfter(Duration.ofMillis(100))
-                .waitStrategy(() -> {throw new RuntimeException("asd");})
+                .timeout(timeoutMock)
+                .waitStrategy(waitStrategyMock)
                 .retryOnException(false)
                 .build();
 
-        RetryMatcher<Integer> sut = new RetryMatcher<>(is(5), config);
+        RetryMatcher<Integer> sut = new RetryMatcher<>(is(2), config);
 
         assertTrue(sut.matches(supplierSpy));
+
+        verify(waitStrategyMock, times(1)).waitt();
     }
 }

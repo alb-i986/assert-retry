@@ -11,10 +11,10 @@ import me.alb_i986.testing.assertions.retry.internal.Timeout;
 public class RetryConfig {
 
     private final Timeout timeout;
-    private final Runnable waitStrategy;
+    private final WaitStrategy waitStrategy;
     private final boolean retryOnException;
 
-    RetryConfig(Timeout timeout, Runnable waitStrategy, boolean retryOnException) {
+    RetryConfig(Timeout timeout, WaitStrategy waitStrategy, boolean retryOnException) {
         this.timeout = timeout;
         this.waitStrategy = waitStrategy;
         this.retryOnException = retryOnException;
@@ -28,7 +28,7 @@ public class RetryConfig {
         return timeout;
     }
 
-    public Runnable getWaitStrategy() {
+    public WaitStrategy getWaitStrategy() {
         return waitStrategy;
     }
 

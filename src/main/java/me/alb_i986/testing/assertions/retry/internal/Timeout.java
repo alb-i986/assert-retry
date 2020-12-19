@@ -1,34 +1,43 @@
 package me.alb_i986.testing.assertions.retry.internal;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 
 public class Timeout {
 
+    private final Clock clock;
     private final Duration timeoutDuration;
 
-    private Long startTimeNanos;
+    private Instant startInstant;
+    private Instant endInstant;
 
     public Timeout(Duration timeoutDuration) {
-        this.timeoutDuration = timeoutDuration;
+        this(timeoutDuration, Clock.systemDefaultZone());
     }
 
-    //TODO allow unit tests to inject a mocked Clock (with Joda time or jdk8)
+    public Timeout(Duration timeoutDuration, Clock clock) {
+        this.timeoutDuration = timeoutDuration;
+        this.clock = clock;
+    }
 
     /**
      * @throws IllegalStateException if the timeout has already been started and not reset
      */
     public void start() {
-        if (startTimeNanos != null) {
+        if (startInstant != null) {
             throw new IllegalStateException("Timeout had already been started and not reset");
         }
-        this.startTimeNanos = System.nanoTime();
+        this.startInstant = clock.instant();
+        this.endInstant = startInstant.plus(timeoutDuration);
     }
 
     /**
-     * Reset the timeout so that it can be started again.
+     * Resets the timeout so that it can be started again.
      */
     public void reset() {
-        this.startTimeNanos = null;
+        this.startInstant = null;
+        this.endInstant = null;
     }
 
     /**
@@ -43,11 +52,8 @@ public class Timeout {
      * @return true if the timeout has expired since it was started
      */
     public boolean isExpired() {
-        return Duration.ofNanos(getElapsedNanos()).compareTo(timeoutDuration) > 0;
-    }
-
-    protected long getElapsedNanos() {
-        return System.nanoTime() - startTimeNanos;
+        Instant now = clock.instant();
+        return endInstant.compareTo(now) < 0;
     }
 
     public Duration getDuration() {

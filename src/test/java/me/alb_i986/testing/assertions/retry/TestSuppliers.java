@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class Suppliers {
+public class TestSuppliers {
 
     /**
      * Generate an ascending sequence of integers, starting from the given integer.

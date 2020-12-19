@@ -1,11 +1,13 @@
 package me.alb_i986.testing.assertions.retry.internal;
 
 import me.alb_i986.testing.assertions.retry.RetryConfigBuilder;
+import me.alb_i986.testing.assertions.retry.WaitStrategy;
+import org.hamcrest.Description;
 
 import java.time.Duration;
 
 /**
- * Factory methods of wait strategies to be fed into {@link RetryConfigBuilder#waitStrategy(Runnable)}.
+ * Factory methods of wait strategies to be fed into {@link RetryConfigBuilder#waitStrategy(WaitStrategy)}.
  */
 public class WaitStrategies {
 
@@ -14,13 +16,13 @@ public class WaitStrategies {
     }
 
     /**
-     * Sleep for the given amount of time.
+     * Sleeps for the given amount of time.
      * <p>
      * If the duration is greater than {@link Long#MAX_VALUE}, it will be truncated.
      *
      * @see #sleep(long)
      */
-    public static Runnable sleep(Duration duration) {
+    public static WaitStrategy sleep(Duration duration) {
         try {
             return sleep(duration.toMillis());
         } catch (ArithmeticException e) {
@@ -29,21 +31,20 @@ public class WaitStrategies {
     }
 
     /**
-     * Sleep for the given amount of time.
-     * <p>
-     * If the thread is interrupted, it will sleep for a shorter amount of time.
+     * Sleeps for the given amount of time.
      *
      * @see Thread#sleep(long)
      */
-    public static Runnable sleep(long millis) {
-        return new Runnable() {
+    public static WaitStrategy sleep(long millis) {
+        return new WaitStrategy() {
             @Override
-            public void run() {
-                try {
-                    Thread.sleep(millis);
-                } catch (InterruptedException e) {
-                    // swallow!
-                }
+            public void waitt() throws InterruptedException {
+                Thread.sleep(millis);
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(toString());
             }
 
             @Override
