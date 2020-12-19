@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-public class RetryMatcherIT {
+public class RetryMatcherIntegrationTest {
 
     private static final Duration FIFTY_MILLIS = Duration.ofMillis(50);
 
