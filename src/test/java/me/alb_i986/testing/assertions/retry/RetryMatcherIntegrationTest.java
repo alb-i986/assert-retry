@@ -2,22 +2,27 @@ package me.alb_i986.testing.assertions.retry;
 
 import me.alb_i986.testing.assertions.retry.internal.Timeout;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 /**
  * Testing the integration with {@link org.hamcrest.MatcherAssert#assertThat(Object, Matcher)}.
@@ -30,12 +35,18 @@ public class RetryMatcherIntegrationTest {
     public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock
-    private Supplier<String> supplierMock;
-
-    @Mock
     private Clock clockMock;
 
     private Timeout timeoutWithMockedClock;
+
+    @Mock
+    private Supplier<String> supplierMock;
+    @Mock
+    private Supplier<List<String>> listSupplierMock;
+    @Mock
+    private Supplier<String[]> arraySupplierMock;
+
+    private RetryConfigBuilder configBuilder;
 
     @Before
     public void setUp() {
@@ -48,6 +59,11 @@ public class RetryMatcherIntegrationTest {
                 .willReturn(Instant.EPOCH.plusMillis(50));
 
         timeoutWithMockedClock = new Timeout(Duration.ofMillis(49), clockMock);
+
+        configBuilder = RetryConfig.builder()
+                .timeout(timeoutWithMockedClock)
+                .sleepForMillis(1)
+                .retryOnException(false);
     }
 
     @Test
@@ -60,11 +76,9 @@ public class RetryMatcherIntegrationTest {
                 .willReturn("e")
                 .willReturn("f");
 
-        assertThat(supplierMock, RetryMatcher.eventually(containsString("e"),
-                RetryConfig.builder()
-                        .timeout(timeoutWithMockedClock)
-                        .sleepForMillis(1)
-                        .retryOnException(false)
+        assertThat(supplierMock, RetryMatcher.eventually(
+                containsString("e"),
+                configBuilder
         ));
     }
 
@@ -80,11 +94,9 @@ public class RetryMatcherIntegrationTest {
 
 
         try {
-            assertThat(supplierMock, RetryMatcher.eventually(containsString("f"),
-                    RetryConfig.builder()
-                            .timeout(timeoutWithMockedClock)
-                            .sleepForMillis(1)
-                            .retryOnException(false)
+            assertThat(supplierMock, RetryMatcher.eventually(
+                    containsString("f"),
+                    configBuilder
             ));
             fail("expected to fail");
         } catch (AssertionError e) {
@@ -109,9 +121,7 @@ public class RetryMatcherIntegrationTest {
                 .willReturn("found");
 
         assertThat(supplierMock, RetryMatcher.eventually(is("found"),
-                RetryConfig.builder()
-                        .timeout(timeoutWithMockedClock)
-                        .sleepForMillis(1)
+                configBuilder
                         .retryOnException(true)
         ));
     }
@@ -125,11 +135,9 @@ public class RetryMatcherIntegrationTest {
                 .willReturn("never matching actual");
 
         try {
-            assertThat(supplierMock, RetryMatcher.eventually(is("expected value"),
-                    RetryConfig.builder()
-                            .timeout(timeoutWithMockedClock)
-                            .sleepForMillis(1)
-                            .retryOnException(true)
+            assertThat(supplierMock, RetryMatcher.eventually(
+                    is("expected value"),
+                    configBuilder.retryOnException(true)
             ));
             fail("exception expected");
         } catch (AssertionError e) {
@@ -151,12 +159,9 @@ public class RetryMatcherIntegrationTest {
                 .willThrow(new RuntimeException("Supplier failed"));
 
         try {
-            assertThat(supplierMock, RetryMatcher.eventually(is("expected value"),
-
-                    RetryConfig.builder()
-                            .timeout(timeoutWithMockedClock)
-                            .sleepForMillis(1)
-                            .retryOnException(false)
+            assertThat(supplierMock, RetryMatcher.eventually(
+                    is("expected value"),
+                    configBuilder
             ));
             fail("expected to fail");
         } catch (AssertionError e) {
@@ -168,5 +173,101 @@ public class RetryMatcherIntegrationTest {
         }
     }
 
-    //TODO test more real life Matcher's
+    // Testing more real life Matcher's...
+
+    @Test
+    public void hasSize() {
+        given(listSupplierMock.get())
+                .willReturn(Arrays.asList("a", "b", "c"))
+                .willReturn(Arrays.asList("a"))
+                .willReturn(Arrays.asList("b", "a"));
+
+        assertThat(listSupplierMock, RetryMatcher.eventually(
+                Matchers.hasSize(2),
+                configBuilder
+        ));
+
+        verify(listSupplierMock, times(3)).get();
+    }
+
+    @Test
+    public void containsInAnyOrder() {
+        given(listSupplierMock.get())
+                .willReturn(Arrays.asList("a", "b", "c"))
+                .willReturn(Arrays.asList("a"))
+                .willReturn(Arrays.asList("b", "a"));
+
+        assertThat(listSupplierMock, RetryMatcher.eventually(
+                Matchers.containsInAnyOrder("a", "b"),
+                configBuilder
+        ));
+
+        verify(listSupplierMock, times(3)).get();
+    }
+
+    @Test
+    public void arrayContainingInAnyOrder() {
+        given(arraySupplierMock.get())
+                .willReturn(new String[]{"a", "b", "c"})
+                .willReturn(new String[]{"a"})
+                .willReturn(new String[]{"p", "a"});
+
+        assertThat(arraySupplierMock, RetryMatcher.eventually(
+                Matchers.arrayContainingInAnyOrder("a", "p"),
+                configBuilder
+        ));
+
+        verify(arraySupplierMock, times(3)).get();
+    }
+
+    @Test
+    public void emptyIterable() {
+        given(listSupplierMock.get())
+                .willReturn(Arrays.asList("a", "b", "c"))
+                .willReturn(Arrays.asList("a"))
+                .willReturn(Collections.emptyList());
+
+        assertThat(listSupplierMock, RetryMatcher.eventually(
+                Matchers.emptyIterable(),
+                configBuilder
+        ));
+
+        verify(listSupplierMock, times(3)).get();
+    }
+
+    @Test
+    public void emptyArray() {
+        given(arraySupplierMock.get())
+                .willReturn(new String[]{"a", "b", "c"})
+                .willReturn(new String[]{"a"})
+                .willReturn(new String[]{});
+
+        assertThat(arraySupplierMock, RetryMatcher.eventually(
+                Matchers.emptyArray(),
+                configBuilder
+        ));
+
+        verify(arraySupplierMock, times(3)).get();
+    }
+
+    @Test
+    public void instanceOf() {
+        Supplier<Object> supplierMock = Mockito.mock(Supplier.class);
+        given(supplierMock.get())
+                .willReturn(new Pippo())
+                .willReturn(new Pluto())
+                .willReturn(new Topolino());
+
+        assertThat(supplierMock, RetryMatcher.eventually(
+                Matchers.instanceOf(Topolino.class),
+                configBuilder
+        ));
+
+        verify(supplierMock, times(3)).get();
+    }
+
+    private interface Personaggio {}
+    private static class Pippo implements Personaggio {}
+    private static class Pluto implements Personaggio {}
+    private static class Topolino implements Personaggio {}
 }

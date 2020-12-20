@@ -29,11 +29,11 @@ import java.util.function.Supplier;
  *
  * @param <T> the type of the actual values we are gonna test
  */
-public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
+public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
 
     private static final Logger logger = LoggerFactory.getLogger(RetryMatcher.class);
 
-    private final Matcher<T> matcher;
+    private final Matcher<? super T> matcher;
     private final RetryConfig config;
     private final TimeFormatter timeFormatter;
 
@@ -42,14 +42,14 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
 
     private FailureReason failureReason;
 
-    RetryMatcher(Matcher<T> matcher, RetryConfig config) {
+    RetryMatcher(Matcher<? super T> matcher, RetryConfig config) {
         this.matcher = matcher;
         this.config = config;
         this.timeFormatter = TimeFormatter.SINGLETON;
     }
 
     @Override
-    protected boolean matchesSafely(Supplier<T> actualValuesSupplier) {
+    protected boolean matchesSafely(Supplier<? extends T> actualValuesSupplier) {
         config.getTimeout().restart();
 
         while (true) {
@@ -103,7 +103,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
     }
 
     @Override
-    protected void describeMismatchSafely(Supplier<T> item, Description mismatchDescription) {
+    protected void describeMismatchSafely(Supplier<? extends T> item, Description mismatchDescription) {
         mismatchDescription.appendText(failureReason.getDescription())
                 .appendText(System.lineSeparator())
                 .appendText("          Actual values (in order of appearance):");
@@ -131,7 +131,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
         }
     }
 
-    public static <T> Matcher<Supplier<T>> eventually(Matcher<T> matcher, RetryConfigBuilder retryConfigBuilder) {
+    public static <T> Matcher<Supplier<? extends T>> eventually(Matcher<? super T> matcher, RetryConfigBuilder retryConfigBuilder) {
         return new RetryMatcher<>(matcher, retryConfigBuilder.build());
     }
 
@@ -203,7 +203,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
      *
      * @see RetryConfigBuilder
      */
-    public static <T> Matcher<Supplier<T>> eventually(Matcher<T> matcher, RetryConfig retryConfig) {
+    public static <T> Matcher<Supplier<? extends T>> eventually(Matcher<? super T> matcher, RetryConfig retryConfig) {
         return new RetryMatcher<>(matcher, retryConfig);
     }
 }
