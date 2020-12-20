@@ -52,25 +52,40 @@ public class RetryMatcherIntegrationTest {
 
     @Test
     public void supplierEventuallyReturnsMatchingValueWithinTimeout() {
-        assertThat(TestSuppliers.fromList("a", "b", "c", "d", "e", "f"),
-                RetryMatcher.eventually(containsString("e"),
-                        RetryConfig.builder()
-                                .timeout(timeoutWithMockedClock)
-                                .sleepForMillis(1)
-                                .retryOnException(false)
-                ));
+        given(supplierMock.get())
+                .willReturn("a")
+                .willReturn("b")
+                .willReturn("c")
+                .willReturn("d")
+                .willReturn("e")
+                .willReturn("f");
+
+        assertThat(supplierMock, RetryMatcher.eventually(containsString("e"),
+                RetryConfig.builder()
+                        .timeout(timeoutWithMockedClock)
+                        .sleepForMillis(1)
+                        .retryOnException(false)
+        ));
     }
 
     @Test
     public void supplierDoesNotMatchWithinTimeout() {
+        given(supplierMock.get())
+                .willReturn("a")
+                .willReturn("b")
+                .willReturn("c")
+                .willReturn("d")
+                .willReturn("e")
+                .willReturn("f");
+
+
         try {
-            assertThat(TestSuppliers.fromList("a", "b", "c", "d", "e", "f"),
-                    RetryMatcher.eventually(containsString("f"),
-                            RetryConfig.builder()
-                                    .timeout(timeoutWithMockedClock)
-                                    .sleepForMillis(1)
-                                    .retryOnException(false)
-                    ));
+            assertThat(supplierMock, RetryMatcher.eventually(containsString("f"),
+                    RetryConfig.builder()
+                            .timeout(timeoutWithMockedClock)
+                            .sleepForMillis(1)
+                            .retryOnException(false)
+            ));
             fail("expected to fail");
         } catch (AssertionError e) {
             assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match a string containing \"f\" within 49ms\n" +
@@ -86,26 +101,36 @@ public class RetryMatcherIntegrationTest {
 
     @Test
     public void supplierThrowsButEventuallyMatches() {
-        Supplier<String> supplier = TestSuppliers.throwing(4, "found");
+        given(supplierMock.get())
+                .willThrow(new RuntimeException("Supplier failed"))
+                .willThrow(new RuntimeException("Supplier failed"))
+                .willThrow(new RuntimeException("Supplier failed"))
+                .willThrow(new RuntimeException("Supplier failed"))
+                .willReturn("found");
 
-        assertThat(supplier, RetryMatcher.eventually(is("found"),
-                        RetryConfig.builder()
-                                .timeout(timeoutWithMockedClock)
-                                .sleepForMillis(1)
-                                .retryOnException(true)
-                ));
+        assertThat(supplierMock, RetryMatcher.eventually(is("found"),
+                RetryConfig.builder()
+                        .timeout(timeoutWithMockedClock)
+                        .sleepForMillis(1)
+                        .retryOnException(true)
+        ));
     }
 
     @Test
     public void supplierThrowsAndEventuallyDoesNotMatch() {
+        given(supplierMock.get())
+                .willThrow(new RuntimeException("Supplier failed"))
+                .willThrow(new RuntimeException("Supplier failed"))
+                .willThrow(new RuntimeException("Supplier failed"))
+                .willReturn("never matching actual");
+
         try {
-            assertThat(TestSuppliers.throwing(3, "never matching actual"),
-                    RetryMatcher.eventually(is("expected value"),
-                            RetryConfig.builder()
-                                    .timeout(timeoutWithMockedClock)
-                                    .sleepForMillis(1)
-                                    .retryOnException(true)
-                    ));
+            assertThat(supplierMock, RetryMatcher.eventually(is("expected value"),
+                    RetryConfig.builder()
+                            .timeout(timeoutWithMockedClock)
+                            .sleepForMillis(1)
+                            .retryOnException(true)
+            ));
             fail("exception expected");
         } catch (AssertionError e) {
             assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"expected value\" within 49ms\n" +
@@ -124,15 +149,15 @@ public class RetryMatcherIntegrationTest {
         given(supplierMock.get())
                 .willReturn("not expected")
                 .willThrow(new RuntimeException("Supplier failed"));
-        
+
         try {
             assertThat(supplierMock, RetryMatcher.eventually(is("expected value"),
 
                     RetryConfig.builder()
                             .timeout(timeoutWithMockedClock)
-                                    .sleepForMillis(1)
-                                    .retryOnException(false)
-                    ));
+                            .sleepForMillis(1)
+                            .retryOnException(false)
+            ));
             fail("expected to fail");
         } catch (AssertionError e) {
             assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"expected value\" within 49ms\n" +
