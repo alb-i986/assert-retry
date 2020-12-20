@@ -5,6 +5,8 @@ import me.alb_i986.testing.assertions.retry.internal.TimeFormatter;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -29,6 +31,8 @@ import java.util.function.Supplier;
  */
 public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
 
+    private static final Logger logger = LoggerFactory.getLogger(RetryMatcher.class);
+
     private final Matcher<T> matcher;
     private final RetryConfig config;
     private final TimeFormatter timeFormatter;
@@ -48,9 +52,6 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
     protected boolean matchesSafely(Supplier<T> actualValuesSupplier) {
         config.getTimeout().restart();
 
-        // TODO add logging, especially when we wait: that's an important info to report to the user
-        // TODO move to slf4j
-
         while (true) {
             AssertRetryResult result = new AssertRetryResult();
             retryResults.add(result);
@@ -59,10 +60,13 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
                 result.suppliedValue(actual);
 
                 if (matcher.matches(actual)) { // assertion PASSED!
+                    logger.debug("The actual value supplied MATCHED: {}", actual);
                     result.actualMatches();
                     return true;
                 }
+                logger.debug("The actual value supplied did not match: {}", actual);
             } catch (Exception e) {
+                logger.debug("The Supplier threw", e);
                 result.supplierThrew(e);
                 if (!config.isRetryOnException()) {
                     failureReason = FailureReason.SUPPLIER_THREW;
@@ -79,11 +83,13 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<T>> {
                 failureReason = FailureReason.TIMEOUT_EXPIRED;
                 return false;
             }
+            logger.debug("The timeout has not expired yet: we're gonna wait before trying again. {}", config.getWaitStrategy());
 
             try {
                 config.getWaitStrategy().waitt();
             } catch (Exception e) {
                 // continue with the next attempt
+                logger.debug("The WaitStrategy threw: we'll try again NOW", e);
             }
         }
     }
