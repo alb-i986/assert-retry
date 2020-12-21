@@ -9,7 +9,6 @@ public class Timeout {
     private final Clock clock;
     private final Duration timeoutDuration;
 
-    private Instant startInstant;
     private Instant endInstant;
 
     public Timeout(Duration timeoutDuration) {
@@ -25,18 +24,16 @@ public class Timeout {
      * @throws IllegalStateException if the timeout has already been started and not reset
      */
     public void start() {
-        if (startInstant != null) {
+        if (endInstant != null) {
             throw new IllegalStateException("Timeout had already been started and not reset");
         }
-        this.startInstant = clock.instant();
-        this.endInstant = startInstant.plus(timeoutDuration);
+        this.endInstant = clock.instant().plus(timeoutDuration);
     }
 
     /**
      * Resets the timeout so that it can be started again.
      */
     public void reset() {
-        this.startInstant = null;
         this.endInstant = null;
     }
 
@@ -53,7 +50,7 @@ public class Timeout {
      */
     public boolean isExpired() {
         Instant now = clock.instant();
-        return endInstant.compareTo(now) < 0;
+        return now.isAfter(endInstant);
     }
 
     public Duration getDuration() {
