@@ -1,5 +1,6 @@
 package me.alb_i986.testing.assertions.retry;
 
+import me.alb_i986.testing.assertions.retry.internal.RetryOnException;
 import me.alb_i986.testing.assertions.retry.internal.Timeout;
 import me.alb_i986.testing.assertions.retry.internal.WaitStrategies;
 
@@ -11,7 +12,7 @@ import java.time.Duration;
 public class RetryConfigBuilder {
 
     private WaitStrategy waitStrategy;
-    private Boolean retryOnException;
+    private RetryOnException retryOnException;
     private Timeout timeout;
 
     /**
@@ -77,10 +78,24 @@ public class RetryConfigBuilder {
     }
 
     /**
-     * Whether we should retry when the supplier of actual values throws an exception.
+     * Configure not to retry in case the Supplier throws any exception.
      */
-    public RetryConfigBuilder retryOnException(boolean retryOnException) {
-        this.retryOnException = retryOnException;
+    public RetryConfigBuilder doNotRetryOnException() {
+        this.retryOnException = new RetryOnException(null);
+        return this;
+    }
+
+    /**
+     * Configure the retry mechanism to retry in case the Supplier throws
+     * the given type of exception, or lower (a subtype).
+     *
+     * @param exceptionType the type of exception thrown by the Supplier which we should catch
+     */
+    public RetryConfigBuilder retryOnException(Class<? extends Exception> exceptionType) {
+        if (exceptionType == null) {
+            throw new IllegalArgumentException("The exception type must not be null");
+        }
+        this.retryOnException = new RetryOnException(exceptionType);
         return this;
     }
 

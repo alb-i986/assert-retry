@@ -63,7 +63,7 @@ public class RetryMatcherTest {
         RetryConfig config = new RetryConfigBuilder()
                 .timeout(timeoutWithMockedClock)
                 .waitStrategy(waitStrategyMock)
-                .retryOnException(false)
+                .doNotRetryOnException()
                 .build();
         
         RetryMatcher<Integer> sut = new RetryMatcher<>(is(1), config);
@@ -80,7 +80,7 @@ public class RetryMatcherTest {
         RetryConfig config = new RetryConfigBuilder()
                 .timeout(timeoutWithMockedClock)
                 .waitStrategy(waitStrategyMock)
-                .retryOnException(false)
+                .doNotRetryOnException()
                 .build();
         
         RetryMatcher<Integer> sut = new RetryMatcher<>(is(5), config);
@@ -97,7 +97,7 @@ public class RetryMatcherTest {
         RetryConfig config = new RetryConfigBuilder()
                 .timeout(timeoutWithMockedClock)
                 .waitStrategy(waitStrategyMock)
-                .retryOnException(false)
+                .doNotRetryOnException()
                 .build();
        
         RetryMatcher<Integer> sut = new RetryMatcher<>(is(6), config);
@@ -117,7 +117,7 @@ public class RetryMatcherTest {
         RetryConfig config = new RetryConfigBuilder()
                 .timeout(timeoutWithMockedClock)
                 .waitStrategy(waitStrategyMock)
-                .retryOnException(false)
+                .doNotRetryOnException()
                 .build();
 
         RetryMatcher<String> sut = new RetryMatcher<>(is("WHATEVER"), config);
@@ -130,14 +130,14 @@ public class RetryMatcherTest {
     }
 
     @Test
-    public void shouldRetryWhenSupplierThrowsGivenRetryOnExceptionIsOn() throws Exception {
+    public void shouldRetryWhenSupplierThrowsSubtypeOfConfiguredException() throws Exception {
         given(supplierMock.get())
-                .willThrow(new RuntimeException("Supplier failed"));
+                .willThrow(new SubException());
 
         RetryConfig config = new RetryConfigBuilder()
                 .timeout(timeoutWithMockedClock)
                 .waitStrategy(waitStrategyMock)
-                .retryOnException(true)
+                .retryOnException(SuperException.class)
                 .build();
 
         RetryMatcher<String> sut = new RetryMatcher<>(is("WHATEVER"), config);
@@ -150,13 +150,53 @@ public class RetryMatcherTest {
     }
 
     @Test
+    public void shouldRetryWhenSupplierThrowsSameTypeAsConfiguredException() throws Exception {
+        given(supplierMock.get())
+                .willThrow(new SuperException());
+
+        RetryConfig config = new RetryConfigBuilder()
+                .timeout(timeoutWithMockedClock)
+                .waitStrategy(waitStrategyMock)
+                .retryOnException(SuperException.class)
+                .build();
+
+        RetryMatcher<String> sut = new RetryMatcher<>(is("WHATEVER"), config);
+
+        // when
+        assertFalse(sut.matches(supplierMock));
+
+        verify(supplierMock, times(5)).get();
+        verify(waitStrategyMock, times(4)).waitt();
+    }
+
+    @Test
+    public void shouldNotRetryWhenSupplierThrowsSuperType() throws Exception {
+        given(supplierMock.get())
+                .willThrow(new SuperException());
+
+        RetryConfig config = new RetryConfigBuilder()
+                .timeout(timeoutWithMockedClock)
+                .waitStrategy(waitStrategyMock)
+                .retryOnException(SubException.class)
+                .build();
+
+        RetryMatcher<String> sut = new RetryMatcher<>(is("WHATEVER"), config);
+
+        // when
+        assertFalse(sut.matches(supplierMock));
+
+        verify(supplierMock, times(1)).get();
+        verify(waitStrategyMock, times(0)).waitt();
+    }
+
+    @Test
     public void shouldNotFailMiserablyWhenTheWaitStrategyThrows() throws Exception {
         willThrow(new RuntimeException("dummy exception")).given(waitStrategyMock).waitt();
 
         RetryConfig config = new RetryConfigBuilder()
                 .timeout(timeoutWithMockedClock)
                 .waitStrategy(waitStrategyMock)
-                .retryOnException(false)
+                .doNotRetryOnException()
                 .build();
 
         RetryMatcher<Integer> sut = new RetryMatcher<>(is(2), config);

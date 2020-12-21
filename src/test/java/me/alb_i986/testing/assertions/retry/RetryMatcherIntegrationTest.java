@@ -64,7 +64,7 @@ public class RetryMatcherIntegrationTest {
         configBuilder = RetryConfig.builder()
                 .timeout(timeoutWithMockedClock)
                 .sleepForMillis(1)
-                .retryOnException(false);
+                .doNotRetryOnException();
     }
 
     @Test
@@ -123,7 +123,7 @@ public class RetryMatcherIntegrationTest {
 
         assertThat(supplierMock, RetryMatcher.eventually(is("found"),
                 configBuilder
-                        .retryOnException(true)
+                        .retryOnException(RuntimeException.class)
         ));
     }
 
@@ -138,7 +138,7 @@ public class RetryMatcherIntegrationTest {
         try {
             assertThat(supplierMock, RetryMatcher.eventually(
                     is("expected value"),
-                    configBuilder.retryOnException(true)
+                    configBuilder.retryOnException(RuntimeException.class)
             ));
             fail("exception expected");
         } catch (AssertionError e) {

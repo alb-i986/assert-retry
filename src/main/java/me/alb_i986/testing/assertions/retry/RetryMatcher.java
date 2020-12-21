@@ -68,15 +68,13 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
             } catch (Exception e) {
                 logger.debug("The Supplier threw", e);
                 result.supplierThrew(e);
-                if (!config.isRetryOnException()) {
+                if (config.getRetryOnException().isOff()) {
                     failureReason = FailureReason.SUPPLIER_THREW;
                     return false;
+                } else if (!config.getRetryOnException().matches(e)) {
+                    failureReason = FailureReason.SUPPLIER_THREW_UNCONFIGURED_EXCEPTION;
+                    return false;
                 }
-
-                // TODO configurable type of exception to retry on
-//                if (!config.getRetryException().isAssignableFrom(e.getClass())) {
-//                    throw e;
-//                }
             }
 
             if (config.getTimeout().isExpired()) {
@@ -118,6 +116,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
     private enum FailureReason {
         TIMEOUT_EXPIRED("The timeout was reached and none of the actual values matched"),
         SUPPLIER_THREW("An exception was thrown while retrieving the actual value"),
+        SUPPLIER_THREW_UNCONFIGURED_EXCEPTION("An exception which was not expected was thrown while retrieving the actual value")
         ;
 
         private final String description;
@@ -190,7 +189,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
      *     <li>the timeout: {@link RetryConfigBuilder#timeoutAfter(Duration)}</li>
      *     <li>how long to sleep for before retrying: {@link RetryConfigBuilder#sleepFor(Duration)}</li>
      *     <li>or, as an alternative, a custom wait strategy: {@link RetryConfigBuilder#waitStrategy(WaitStrategy)}</li>
-     *     <li>whether to retry in case the {@code Supplier} throws: {@link RetryConfigBuilder#retryOnException(boolean)}</li>
+     *     <li>whether to retry in case the {@code Supplier} throws: {@link RetryConfigBuilder#retryOnException(Class)}</li>
      * </ul>
      *
      * As shown in the example above, {@link RetryConfig#builder()}
