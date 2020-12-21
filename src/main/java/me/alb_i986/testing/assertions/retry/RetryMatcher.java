@@ -96,7 +96,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
 
     @Override
     public void describeTo(Description description) {
-        description.appendText("supplied values to *eventually* match ")
+        description.appendText("supplied value to *eventually* match ")
                 .appendDescriptionOf(matcher)
                 .appendText(" within " + timeFormatter.prettyPrint(
                         config.getTimeout().getDuration()));
@@ -117,7 +117,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
 
     private enum FailureReason {
         TIMEOUT_EXPIRED("The timeout was reached and none of the actual values matched"),
-        SUPPLIER_THREW("The Supplier threw"),
+        SUPPLIER_THREW("An exception was thrown while retrieving the actual value"),
         ;
 
         private final String description;
@@ -176,7 +176,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
      * an AssertionError similar to the following will be thrown:
      * <pre>
      * java.lang.AssertionError:
-     * Expected: supplied values to *eventually* match a string containing "expected content" within 60s
+     * Expected: supplied value to *eventually* match a string containing "expected content" within 60s
      *      but: The timeout was reached and none of the actual values matched
      *           Actual values (in order of appearance):
      *            - thrown javax.jms.MessageFormatException: Blah blah

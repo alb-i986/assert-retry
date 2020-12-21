@@ -101,7 +101,7 @@ public class RetryMatcherIntegrationTest {
             ));
             fail("expected to fail");
         } catch (AssertionError e) {
-            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match a string containing \"f\" within 49ms\n" +
+            assertThat(e.getMessage(), equalTo("\nExpected: supplied value to *eventually* match a string containing \"f\" within 49ms\n" +
                     "     but: The timeout was reached and none of the actual values matched\n" +
                     "          Actual values (in order of appearance):\n" +
                     "           - \"a\"\n" +
@@ -142,7 +142,7 @@ public class RetryMatcherIntegrationTest {
             ));
             fail("exception expected");
         } catch (AssertionError e) {
-            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"expected value\" within 49ms\n" +
+            assertThat(e.getMessage(), equalTo("\nExpected: supplied value to *eventually* match is \"expected value\" within 49ms\n" +
                     "     but: The timeout was reached and none of the actual values matched\n" +
                     "          Actual values (in order of appearance):\n" +
                     "           - thrown java.lang.RuntimeException: Supplier failed\n" +
@@ -166,8 +166,8 @@ public class RetryMatcherIntegrationTest {
             ));
             fail("expected to fail");
         } catch (AssertionError e) {
-            assertThat(e.getMessage(), equalTo("\nExpected: supplied values to *eventually* match is \"expected value\" within 49ms\n" +
-                    "     but: The Supplier threw\n" +
+            assertThat(e.getMessage(), equalTo("\nExpected: supplied value to *eventually* match is \"expected value\" within 49ms\n" +
+                    "     but: An exception was thrown while retrieving the actual value\n" +
                     "          Actual values (in order of appearance):\n" +
                     "           - \"not expected\"\n" +
                     "           - thrown java.lang.RuntimeException: Supplier failed"));
