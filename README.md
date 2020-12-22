@@ -12,11 +12,9 @@ AFAIK there are already two libraries out there resolving the same problem this 
 
 Awaitility in particular looks pretty good indeed.
 
-The added value of `assert-retry` is that it's integrated with JUnit/Hamcrest `assertThat` assertions.
+The added value of `assert-retry` is that it is integrated with Hamcrest's `assertThat` assertions.
 
-What I love about Hamcrest assertions is the valuable feedback it provides to the user when the assertion fails.
-
-Read on for a taste.
+What I love about Hamcrest assertions is the valuable feedback they provide to the user when they fail.
 
 
 ## Example of usage
@@ -40,26 +38,27 @@ Given the async nature of the system, we need to employ a bit of tolerance in ou
     assertThat(messageText, eventually(containsString("expected content"),
             RetryConfig.builder()
                 .timeoutAfter(Duration.ofSeconds(60))
-                .sleepBetweenAttempts(Duration.ofSeconds(5))
-                .retryOnException(true)
+                .sleepFor(Duration.ofSeconds(5))
+                .retryOnException(JMSException.class)
     ));
 
 The first few lines set up the Supplier of actual values, which will poll the message queue for messages.
 
 Then we have our assertion.
 In this exampple it is asserting that the expected text message will be received within 60 seconds.
-After each failing attempt, it will wait for 5s, and then try again.
+After each failing attempt, it will wait for 5s, and then it will try again.
 
 If `consumer.receiveNoWait()` throws a `JMSException`, the assertion will be re-tried,
 as if it returned a non-matching value.
 
 Finally, the assertion will timeout after 60s, and an AssertionError similar to the following will be thrown:
 
-       java.lang.AssertionError: Assertion failed after 10/10 attempts (49s):
-           Expected: eventually a string containing "expected content"
-           Actual values: (in order of appearance)
-             - "some content"
-             - null
-             - "some other content"
+       java.lang.AssertionError:
+       Expected: supplied value to *eventually* match a string containing "expected content" within 60s
+           but: The timeout was reached and none of the actual values matched
+                Actual values (in order of appearance):
+                 - "some content"
+                 - null
+                 - "some other content"
 
-For more info, please check the javadoc of `AssertRetry#assertThat`.
+For more info, please check the javadoc of `RetryMatcher#eventually`.
