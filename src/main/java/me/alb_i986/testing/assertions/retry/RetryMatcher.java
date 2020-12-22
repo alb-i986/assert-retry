@@ -84,7 +84,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
             logger.debug("The timeout has not expired yet: we're gonna wait before trying again. {}", config.getWaitStrategy());
 
             try {
-                config.getWaitStrategy().waitt();
+                config.getWaitStrategy().runWait();
             } catch (Exception e) {
                 // continue with the next attempt
                 logger.debug("The WaitStrategy threw: we'll try again NOW", e);

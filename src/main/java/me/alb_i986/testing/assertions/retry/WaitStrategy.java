@@ -1,8 +1,8 @@
 package me.alb_i986.testing.assertions.retry;
 
-import org.hamcrest.SelfDescribing;
+public interface WaitStrategy {
 
-public interface WaitStrategy extends SelfDescribing {
+    void runWait() throws Exception;
 
-    void waitt() throws Exception;
+    String getDescription();
 }

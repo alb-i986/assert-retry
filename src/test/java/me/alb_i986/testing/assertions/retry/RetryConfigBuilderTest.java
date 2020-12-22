@@ -1,6 +1,6 @@
 package me.alb_i986.testing.assertions.retry;
 
-import me.alb_i986.testing.assertions.retry.internal.WaitStrategies;
+import me.alb_i986.testing.assertions.retry.internal.SleepWaitStrategy;
 import me.alb_i986.testing.assertions.retry.internal.Timeout;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class RetryConfigBuilderTest {
     public void cantBuildConfigWithoutTimeout() {
         try {
             sut.doNotRetryOnException()
-                    .waitStrategy(WaitStrategies.sleep(5))
+                    .sleepForMillis(5)
                     .build();
             fail("exception expected");
         } catch (IllegalStateException e) {
@@ -42,7 +42,7 @@ public class RetryConfigBuilderTest {
     public void cantBuildConfigWithoutRetryOnException() {
         try {
             sut.timeout(new Timeout(Duration.ofMillis(100)))
-                    .waitStrategy(WaitStrategies.sleep(10))
+                    .sleepForMillis(10)
                     .build();
             fail("exception expected");
         } catch (IllegalStateException e) {

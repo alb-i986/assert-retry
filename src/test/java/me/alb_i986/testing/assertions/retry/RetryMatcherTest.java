@@ -72,7 +72,7 @@ public class RetryMatcherTest {
         assertTrue(sut.matches(supplierMock));
 
         verify(supplierMock, times(1)).get();
-        verify(waitStrategyMock, times(0)).waitt();
+        verify(waitStrategyMock, times(0)).runWait();
     }
 
     @Test
@@ -89,7 +89,7 @@ public class RetryMatcherTest {
         assertTrue(sut.matches(supplierMock));
 
         verify(supplierMock, times(5)).get();
-        verify(waitStrategyMock, times(4)).waitt();
+        verify(waitStrategyMock, times(4)).runWait();
     }
 
     @Test
@@ -106,7 +106,7 @@ public class RetryMatcherTest {
         assertFalse(sut.matches(supplierMock));
 
         verify(supplierMock, times(5)).get();
-        verify(waitStrategyMock, times(4)).waitt();
+        verify(waitStrategyMock, times(4)).runWait();
     }
 
     @Test
@@ -126,7 +126,7 @@ public class RetryMatcherTest {
         assertFalse(sut.matches(supplierMock));
 
         verify(supplierMock, times(1)).get();
-        verify(waitStrategyMock, times(0)).waitt();
+        verify(waitStrategyMock, times(0)).runWait();
     }
 
     @Test
@@ -146,7 +146,7 @@ public class RetryMatcherTest {
         assertFalse(sut.matches(supplierMock));
 
         verify(supplierMock, times(5)).get();
-        verify(waitStrategyMock, times(4)).waitt();
+        verify(waitStrategyMock, times(4)).runWait();
     }
 
     @Test
@@ -166,7 +166,7 @@ public class RetryMatcherTest {
         assertFalse(sut.matches(supplierMock));
 
         verify(supplierMock, times(5)).get();
-        verify(waitStrategyMock, times(4)).waitt();
+        verify(waitStrategyMock, times(4)).runWait();
     }
 
     @Test
@@ -186,12 +186,12 @@ public class RetryMatcherTest {
         assertFalse(sut.matches(supplierMock));
 
         verify(supplierMock, times(1)).get();
-        verify(waitStrategyMock, times(0)).waitt();
+        verify(waitStrategyMock, times(0)).runWait();
     }
 
     @Test
     public void shouldNotFailMiserablyWhenTheWaitStrategyThrows() throws Exception {
-        willThrow(new RuntimeException("dummy exception")).given(waitStrategyMock).waitt();
+        willThrow(new RuntimeException("dummy exception")).given(waitStrategyMock).runWait();
 
         RetryConfig config = new RetryConfigBuilder()
                 .timeout(timeoutWithMockedClock)
@@ -203,6 +203,6 @@ public class RetryMatcherTest {
 
         assertTrue(sut.matches(supplierMock));
 
-        verify(waitStrategyMock, times(1)).waitt();
+        verify(waitStrategyMock, times(1)).runWait();
     }
 }

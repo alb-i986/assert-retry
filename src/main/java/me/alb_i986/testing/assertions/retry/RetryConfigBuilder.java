@@ -1,8 +1,9 @@
 package me.alb_i986.testing.assertions.retry;
 
 import me.alb_i986.testing.assertions.retry.internal.RetryOnException;
+import me.alb_i986.testing.assertions.retry.internal.SystemSleeper;
 import me.alb_i986.testing.assertions.retry.internal.Timeout;
-import me.alb_i986.testing.assertions.retry.internal.WaitStrategies;
+import me.alb_i986.testing.assertions.retry.internal.SleepWaitStrategy;
 
 import java.time.Duration;
 
@@ -18,7 +19,7 @@ public class RetryConfigBuilder {
     /**
      * Stop retrying when the timeout expires.
      *
-     * @throws IllegalArgumentException if time is not a positive number
+     * @throws IllegalArgumentException if the duration is not positive
      */
     public RetryConfigBuilder timeoutAfter(Duration duration) {
         if (duration == null) {
@@ -31,24 +32,23 @@ public class RetryConfigBuilder {
     }
 
     protected RetryConfigBuilder timeout(Timeout timeout) {
-        if (timeout == null) {
-            throw new IllegalArgumentException("null timeout");
-        }
         this.timeout = timeout;
         return this;
     }
 
+    /**
+     * @see #sleepFor(Duration)
+     */
     public RetryConfigBuilder sleepForMillis(long millis) {
         return sleepFor(Duration.ofMillis(millis));
     }
 
     /**
-     * Set {@link WaitStrategies#sleep(Duration)} as the wait strategy.
+     * Configure sleep as the wait strategy.
      *
-     * @throws IllegalArgumentException if the duration is not positive, or if it's null
+     * @throws IllegalArgumentException if the duration is not positive
      *
-     * @see WaitStrategies#sleep(Duration)
-     * @see #waitStrategy(WaitStrategy)
+     * @see SleepWaitStrategy
      */
     public RetryConfigBuilder sleepFor(Duration duration) {
         if (duration == null) {
@@ -57,7 +57,7 @@ public class RetryConfigBuilder {
         if (duration.isZero() || duration.isNegative()) {
             throw new IllegalArgumentException("Duration must be positive");
         }
-        return waitStrategy(WaitStrategies.sleep(duration));
+        return waitStrategy(new SleepWaitStrategy(duration, new SystemSleeper()));
     }
 
     /**
