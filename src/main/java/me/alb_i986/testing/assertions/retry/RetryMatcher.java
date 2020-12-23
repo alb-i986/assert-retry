@@ -38,7 +38,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
     private final TimeFormatter timeFormatter;
 
 
-    private List<AssertRetryResult> retryResults = new ArrayList<>();
+    private List<AssertRetryResult<T>> retryResults = new ArrayList<>();
 
     private FailureReason failureReason;
 
@@ -53,7 +53,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
         config.getTimeout().restart();
 
         while (true) {
-            AssertRetryResult result = new AssertRetryResult();
+            AssertRetryResult<T> result = new AssertRetryResult<>();
             retryResults.add(result);
             try {
                 T actual = actualValuesSupplier.get();
@@ -106,7 +106,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
                 .appendText(System.lineSeparator())
                 .appendText("          Actual values (in order of appearance):");
 
-        for (AssertRetryResult retryResult : retryResults) {
+        for (AssertRetryResult<T> retryResult : retryResults) {
             mismatchDescription.appendText(System.lineSeparator());
             mismatchDescription.appendText("           - ");
             mismatchDescription.appendDescriptionOf(retryResult);
