@@ -21,13 +21,12 @@ import java.util.function.Supplier;
  * <p>
  * Can be configured to:
  * <ul>
- *     <li>retry for maximum a fixed number of times</li>
- *     <li>retry for a maximum number of seconds</li>
- *     <li>set the strategy for waiting between attempts, e.g. sleep, or, better, to check some value</li>
+ *     <li>retry for a maximum amount of time</li>
+ *     <li>set the strategy for waiting between attempts, e.g. sleep, or, better, to check for some value</li>
  *     <li>whether to retry in case the Supplier throws</li>
  * </ul>
  *
- * @param <T> the type of the actual values we are gonna test
+ * @param <T> the type of actual values we need to test
  */
 public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
 
@@ -131,7 +130,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
     }
 
     public static <T> Matcher<Supplier<? extends T>> eventually(Matcher<? super T> matcher, RetryConfigBuilder retryConfigBuilder) {
-        return new RetryMatcher<>(matcher, retryConfigBuilder.build());
+        return eventually(matcher, retryConfigBuilder.build());
     }
 
     /**
@@ -161,7 +160,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
      *         RetryConfig.builder()
      *             .timeoutAfter(Duration.ofSeconds(60))
      *             .sleepFor(Duration.ofSeconds(5))
-     *             .retryOnException(true)));
+     *             .retryOnException(JMSException.class)));
      * </pre>
      *
      * The first few lines set up the supplier of the actual values,
@@ -198,7 +197,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
      * @param <T> the type of the actual values
      *
      * @param matcher a Hamcrest matcher, encapsulating the condition under which the actual value is as expected
-     * @param retryConfig athe configuration of the retry mechanism
+     * @param retryConfig the configuration of the retry mechanism
      *
      * @see RetryConfigBuilder
      */

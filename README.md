@@ -45,7 +45,7 @@ Given the async nature of the system, we need to employ a bit of tolerance in ou
 The first few lines set up the Supplier of actual values, which will poll the message queue for messages.
 
 Then we have our assertion.
-In this exampple it is asserting that the expected text message will be received within 60 seconds.
+In this example it is asserting that the expected text message will be received within 60 seconds.
 After each failing attempt, it will wait for 5s, and then it will try again.
 
 If `consumer.receiveNoWait()` throws a `JMSException`, the assertion will be re-tried,
@@ -58,7 +58,7 @@ Finally, the assertion will timeout after 60s, and an AssertionError similar to 
            but: The timeout was reached and none of the actual values matched
                 Actual values (in order of appearance):
                  - "some content"
-                 - null
+                 - thrown javax.jms.MessageFormatException: Blah blah
                  - "some other content"
 
 For more info, please check the javadoc of `RetryMatcher#eventually`.
