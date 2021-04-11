@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>me.alb-i986.testing</groupId>
-    <artifactId>assert-retry</artifactId>
+    <groupId>me.alb-i986.test.asserts</groupId>
+    <artifactId>assert-retry-hamcrest</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <name>Assert Retry</name>
-    <description>An extension to JUnit/Hamcrest providing assertions _with tolerance_, featuring a retry mechanism</description>
+    <name>AssertRetry</name>
+    <description>An extension to Hamcrest providing assertions with tolerance, featuring a retry mechanism</description>
     <url>https://github.com/alb-i986/assert-retry</url>
 
     <licenses>
@@ -21,9 +21,8 @@
 
     <developers>
         <developer>
-            <name>Alberto Scotto</name>
-            <email>scotto.alberto.86@gmail.com</email>
             <id>alb-i986</id>
+            <name>Alberto Scotto</name>
             <url>http://alb-i986.me</url>
         </developer>
     </developers>
@@ -47,7 +46,6 @@
             <artifactId>hamcrest</artifactId>
             <version>2.2</version>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -61,14 +59,18 @@
             <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.19.0</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>3.6.28</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>

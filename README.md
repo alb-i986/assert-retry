@@ -1,6 +1,6 @@
 # Assert Retry
 
-An extension to JUnit/Hamcrest providing _assertions with tolerance_, featuring a __retry__ mechanism.
+An extension to JUnit/Hamcrest providing *assertions with tolerance*, featuring a **retry** mechanism.
 
 
 ## Motivation
@@ -22,25 +22,23 @@ What I love about Hamcrest assertions is the valuable feedback they provide to t
 Say that we have a JMS queue, and we need to verify that a message with body "expected content" is published on the queue.
 Given the async nature of the system, we need to employ a bit of tolerance in our assertions.
 
-    import static me.alb_i986.testing.assertions.retry.RetryMatcher.eventually;
+    import static me.alb_i986.retry.hamcrest.RetryMatcher.eventually;
+    import static org.hamcrest.MatcherAssert.assertThat;
     import static org.hamcrest.Matchers.containsString;
-    import static org.junit.Assert.assertThat;
       
     MessageConsumer consumer = session.createConsumer(queue);
     connection.start();
     Supplier<String> messageText = new Supplier<>() {
         @Override
         public String get() throws JMSException {
-            TextMessage m = (TextMessage) consumer.receiveNoWait();  // polling for messages, non blocking
+            TextMessage m = (TextMessage) consumer.receiveNoWait();  // polling for messages, non-blocking
             return m == null ? null : m.getText();
         }
     };
-    assertThat(messageText, eventually(containsString("expected content"),
-            RetryConfig.builder()
-                .timeoutAfter(Duration.ofSeconds(60))
-                .sleepFor(Duration.ofSeconds(5))
-                .retryOnException(JMSException.class)
-    ));
+    assertThat(messageText, eventually(containsString("expected content"))
+            .within(60, ChronoUnit.SECONDS)
+            .sleepForSeconds(5)
+            .retryOnException(JMSException.class));
 
 The first few lines set up the Supplier of actual values, which will poll the message queue for messages.
 
@@ -53,12 +51,14 @@ as if it returned a non-matching value.
 
 Finally, the assertion will timeout after 60s, and an AssertionError similar to the following will be thrown:
 
-       java.lang.AssertionError:
+       java.lang.AssertRetryError:
        Expected: supplied value to *eventually* match a string containing "expected content" within 60s
-           but: The timeout was reached and none of the actual values matched
-                Actual values (in order of appearance):
-                 - "some content"
-                 - thrown javax.jms.MessageFormatException: Blah blah
-                 - "some other content"
+           but: The timeout expired and none of the actual values matched
+                Actual results (in order of appearance):
+                 1. "some content"
+                 2. thrown javax.jms.MessageFormatException: Blah blah
+                         at com.example.MyJMSTest.test()
+                         [..]
+                 3. "some other content"
 
 For more info, please check the javadoc of `RetryMatcher#eventually`.
