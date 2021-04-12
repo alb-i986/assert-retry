@@ -23,7 +23,7 @@ import java.time.temporal.TemporalUnit;
  *         or {@link #withWaitStrategy(WaitStrategy) a custom strategy}
  *     </dd>
  *
- *     <dt>The {@link #retryOnException(Class) type of exception} the Supplier is expected to throw (optional),</dt>
+ *     <dt>The {@link #ignoring(Class) type of exception} the Supplier is expected to throw (optional),</dt>
  *     <dd>i.e. what type of exceptions the {@link RetryMatcher} needs to catch, and retry the assertion upon</dd>
  * </dl>
  * </p>
@@ -92,13 +92,13 @@ public class RetryMatcherBuilder<T> {
     }
 
     /**
-     * Retry in case the Supplier throws the given type of exception, or lower (a subtype).
+     * Retry in case the Supplier throws the given type of exception, or a subtype.
      *
      * @param exceptionType the type of exception which we expect the Supplier to throw
      * @since 1.0
      */
-    public RetryMatcherBuilder<T> retryOnException(Class<? extends Exception> exceptionType) {
-        delegate.retryOnException(exceptionType);
+    public RetryMatcherBuilder<T> ignoring(Class<? extends Exception> exceptionType) {
+        delegate.ignoring(exceptionType);
         return this;
     }
 

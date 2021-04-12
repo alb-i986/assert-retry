@@ -45,7 +45,7 @@ public class RetryConfigBuilder<T> {
         return this;
     }
 
-    public RetryConfigBuilder<T> retryOnException(Class<? extends Exception> exceptionType) {
+    public RetryConfigBuilder<T> ignoring(Class<? extends Exception> exceptionType) {
         this.exceptionType = exceptionType;
         return this;
     }

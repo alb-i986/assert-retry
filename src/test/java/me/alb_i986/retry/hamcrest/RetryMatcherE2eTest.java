@@ -88,7 +88,7 @@ public class RetryMatcherE2eTest {
         assertThat(supplierMock, RetryMatcher.eventually(is("one"))
                 .within(100, ChronoUnit.MILLIS)
                 .sleepForMillis(10)
-                .retryOnException(SuperException.class)
+                .ignoring(SuperException.class)
                 .build());
     }
 
@@ -102,7 +102,7 @@ public class RetryMatcherE2eTest {
                 assertThat(supplierMock, RetryMatcher.eventually(is("one"))
                         .within(100, ChronoUnit.MILLIS)
                         .sleepForMillis(10)
-                        .retryOnException(SubException.class)
+                        .ignoring(SubException.class)
                         .build()))
                 .isInstanceOf(AssertionError.class)
                 .hasMessageStartingWith("\nExpected: supplied value to *eventually* match is \"one\" within 100ms\n" +

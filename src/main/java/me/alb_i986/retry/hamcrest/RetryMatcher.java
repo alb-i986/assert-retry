@@ -3,9 +3,12 @@ package me.alb_i986.retry.hamcrest;
 import me.alb_i986.retry.AssertRetry;
 import me.alb_i986.retry.AssertRetryError;
 import me.alb_i986.retry.RetryConfig;
+import me.alb_i986.retry.RetryResult;
 import me.alb_i986.retry.TimeFormatter;
+import me.alb_i986.retry.utils.Throwables;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.SelfDescribing;
 import org.hamcrest.TypeSafeMatcher;
 
 import java.util.function.Supplier;
@@ -60,7 +63,7 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
      * assertThat(messageText, eventually(containsString("expected content"))
      *         .within(60, ChronoUnit.SECONDS)
      *         .sleepForSeconds(5)
-     *         .retryOnException(JMSException.class));
+     *         .ignoring(JMSException.class));
      * </pre>
      * <p>
      * The first few lines set up the supplier of the actual values,
@@ -137,7 +140,26 @@ public class RetryMatcher<T> extends TypeSafeMatcher<Supplier<? extends T>> {
                     .appendText("           ")
                     .appendText(String.valueOf(i + 1))
                     .appendText(". ")
-                    .appendDescriptionOf(retryError.getResults().get(i));
+                    .appendDescriptionOf(new SelfDescribingResult(retryError.getResults().get(i)));
+        }
+    }
+
+    private static class SelfDescribingResult implements SelfDescribing {
+
+        private final RetryResult result;
+    
+        public SelfDescribingResult(RetryResult result) {
+            this.result = result;
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            if (result.getSupplierException() != null) {
+                description.appendText("thrown ")
+                        .appendText(Throwables.getTrimmedStackTrace(result.getSupplierException())); //TODO improve stacktrace formatting (well tabbed!)
+            } else {
+                description.appendValue(result.getActualValue());
+            }
         }
     }
 }

@@ -1,12 +1,8 @@
 package me.alb_i986.retry;
 
-import me.alb_i986.retry.utils.Throwables;
-import org.hamcrest.Description;
-import org.hamcrest.SelfDescribing;
-
 import static java.util.Objects.requireNonNull;
 
-public class RetryResult implements SelfDescribing {
+public class RetryResult {
 
     private Object actualValue;
     private Exception supplierException;
@@ -19,14 +15,12 @@ public class RetryResult implements SelfDescribing {
         this.supplierException = requireNonNull(supplierException);
     }
 
-    @Override
-    public void describeTo(Description description) {
-        if (supplierException != null) {
-            description.appendText("thrown ")
-                    .appendText(Throwables.getTrimmedStackTrace(supplierException)); //TODO improve stacktrace formatting (well tabbed!)
-        } else {
-            description.appendValue(actualValue);
-        }
+    public Object getActualValue() {
+        return actualValue;
+    }
+
+    public Exception getSupplierException() {
+        return supplierException;
     }
 
     @Override

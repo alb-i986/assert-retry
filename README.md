@@ -38,7 +38,7 @@ Given the async nature of the system, we need to employ a bit of tolerance in ou
     assertThat(messageText, eventually(containsString("expected content"))
             .within(60, ChronoUnit.SECONDS)
             .sleepForSeconds(5)
-            .retryOnException(JMSException.class));
+            .ignoring(JMSException.class));
 
 The first few lines set up the Supplier of actual values, which will poll the message queue for messages.
 
