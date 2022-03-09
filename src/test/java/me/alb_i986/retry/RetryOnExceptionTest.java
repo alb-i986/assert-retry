@@ -15,7 +15,7 @@ public class RetryOnExceptionTest {
         RetryOnException sut = new RetryOnException(null);
 
         assertFalse(sut.isOn());
-        assertFalse(sut.matches(new Exception()));
+        assertTrue(sut.matches(new Exception()));
     }
 
     @Test
