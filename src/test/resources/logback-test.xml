@@ -22,12 +22,7 @@
     </appender>
 
     <root level="debug">
-        <!-- do not print the logs to the console for maven runs; but do when running tests in an IDE -->
-        <if condition='!property("sun.java.command").contains("surefirebooter")'>
-            <then>
                 <appender-ref ref="STDOUT" />
-            </then>
-        </if>
         <appender-ref ref="FILE"/>
     </root>
 
