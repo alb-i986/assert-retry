@@ -5,6 +5,7 @@ import me.alb_i986.retry.testutils.SubException;
 import me.alb_i986.retry.testutils.SuperException;
 import org.junit.Test;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
